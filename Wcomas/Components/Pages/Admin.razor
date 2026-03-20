@@ -1,0 +1,179 @@
+@page "/admin"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@using Wcomas.Models
+@using Wcomas.Services
+@inject InquiryService InquiryService
+@inject CategoryService CategoryService
+@inject ProductService ProductService
+@inject BrandService BrandService
+@layout Wcomas.Components.Layout.AdminLayout
+@rendermode InteractiveServer
+
+<PageTitle>Admin | Dashboard</PageTitle>
+
+<div class="reveal active">
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="glass-panel p-4 h-100 shadow-sm border-0">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-circle bg-primary-soft text-primary me-3">
+                        <i class="bi bi-envelope"></i>
+                    </div>
+                    <span class="text-muted small uppercase fw-bold">Recent Leads</span>
+                </div>
+                <h2 class="m-0 fw-800">@inquiries?.Count(i => !i.IsHandled)</h2>
+                <p class="text-muted small m-0">UNHANDLED INQUIRIES</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 h-100 shadow-sm border-0">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-circle bg-success-soft text-success me-3">
+                        <i class="bi bi-box"></i>
+                    </div>
+                    <span class="text-muted small uppercase fw-bold">Products</span>
+                </div>
+                <h2 class="m-0 fw-800">@products?.Count</h2>
+                <p class="text-muted small m-0">ACTIVE LISTINGS</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 h-100 shadow-sm border-0">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-circle bg-info-soft text-info me-3">
+                        <i class="bi bi-tags"></i>
+                    </div>
+                    <span class="text-muted small uppercase fw-bold">Categories</span>
+                </div>
+                <h2 class="m-0 fw-800">@categories?.Count</h2>
+                <p class="text-muted small m-0">DEFINED SECTIONS</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 h-100 shadow-sm border-0">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-circle bg-warning-soft text-warning me-3">
+                        <i class="bi bi-patch-check"></i>
+                    </div>
+                    <span class="text-muted small uppercase fw-bold">Brands</span>
+                </div>
+                <h2 class="m-0 fw-800">@brands?.Count</h2>
+                <p class="text-muted small m-0">REGISTERED BRANDS</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="glass-panel p-4 shadow-sm border-0">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="m-0 fw-700">Recent Inquiries</h5>
+                    <a href="/admin/leads" class="btn btn-link btn-sm p-0">View All</a>
+                </div>
+                @if (inquiries?.Any() == true)
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr class="text-muted small uppercase">
+                                    <th>Name</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var lead in inquiries.Take(5))
+                                {
+                                    <tr>
+                                        <td><strong>@lead.Name</strong></td>
+                                        <td>@lead.CreatedAt.ToString("MMM dd")</td>
+                                        <td>
+                                            @if (lead.IsHandled)
+                                            {
+                                                <span class="badge bg-success-soft text-success">Handled</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-primary-soft text-primary">New</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center py-4">No recent inquiries to show.</p>
+                }
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-panel p-4 shadow-sm border-0">
+                <h5 class="m-0 fw-700 mb-4">Quick Actions</h5>
+                <div class="d-grid gap-2">
+                    <a href="/admin/products" class="btn btn-outline-primary text-start p-3 shadow-none border-dashed">
+                        <i class="bi bi-plus-circle me-3"></i> Add New Product
+                    </a>
+                    <a href="/admin/categories" class="btn btn-outline-primary text-start p-3 shadow-none border-dashed mt-2">
+                        <i class="bi bi-tag me-3"></i> Create Category
+                    </a>
+                    <a href="/admin/brands" class="btn btn-outline-primary text-start p-3 shadow-none border-dashed mt-2">
+                        <i class="bi bi-patch-check me-3"></i> Register Brand
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft { background: rgba(0, 0, 0, 0.03); }
+    .bg-success-soft { background: rgba(40, 167, 69, 0.1); }
+    .bg-info-soft { background: rgba(23, 162, 184, 0.1); }
+    .bg-warning-soft { background: rgba(255, 193, 7, 0.1); }
+    
+    .text-primary { color: var(--primary) !important; }
+    .text-success { color: #28a745 !important; }
+    .text-info { color: #17a2b8 !important; }
+    .text-warning { color: #ffc107 !important; }
+
+    .icon-circle {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+        border-radius: 15px !important;
+    }
+
+    .fw-800 { font-weight: 800; }
+    .fw-700 { font-weight: 700; }
+
+    .bg-success-soft { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+    .bg-primary-soft { background: rgba(0, 0, 0, 0.05); color: var(--primary); }
+</style>
+
+@code {
+    private List<Inquiry>? inquiries;
+    private List<Category>? categories;
+    private List<Product>? products;
+    private List<Brand>? brands;
+
+    protected override async Task OnInitializedAsync()
+    {
+        inquiries = await InquiryService.GetAllInquiriesAsync();
+        categories = await CategoryService.GetAllCategoriesAsync();
+        products = await ProductService.GetAllProductsAsync();
+        brands = await BrandService.GetAllBrandsAsync();
+    }
+}

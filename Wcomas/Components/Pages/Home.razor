@@ -1,0 +1,322 @@
+@page "/"
+@using Wcomas.Models
+@using Wcomas.Services
+@inject InquiryService InquiryService
+@rendermode InteractiveServer
+
+<PageTitle>Wcomas | Elite PVC Solutions for Business & Home</PageTitle>
+
+<div class="hero-section">
+    <img src="images/hero.png" class="hero-video-bg" alt="Luxury Interior" />
+    <div class="hero-gradient-overlay"></div>
+    <div class="hero-content">
+        <div class="reveal" style="max-width: 900px;">
+            <span style="color: var(--primary); font-weight: 800; letter-spacing: 6px; display: block; margin-bottom: 2rem; font-size: 1.1rem;">ESTABLISHED EXCELLENCE</span>
+            <h1 style="font-size: clamp(4rem, 12vw, 8rem); line-height: 0.9; margin-bottom: 2.5rem; letter-spacing: -2px;">WCOMAS</h1>
+            <p style="font-size: 1.8rem; margin-bottom: 4rem; color: var(--text-muted); max-width: 700px; font-weight: 300; line-height: 1.6;">
+                Revolutionizing architectural spaces with premium PVC fluted panels and bespoke furniture finishes.
+            </p>
+            <div class="d-flex gap-4 flex-wrap">
+                <a href="#collections" class="btn-premium">View Collections</a>
+                <a href="#contact" class="btn-premium btn-outline">Business Inquiry</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section id="engineering" class="reveal">
+    <div class="text-center mb-5">
+        <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Proven Engineering</h2>
+        <p style="font-size: 1.2rem; color: var(--text-muted); letter-spacing: 2px;">ARCHITECTURAL GRADE DURABILITY</p>
+        <div style="width: 100px; height: 3px; background: var(--primary); margin: 2rem auto;"></div>
+    </div>
+    
+    <div class="row g-5 mt-4">
+        <div class="col-lg-4 col-md-6">
+            <div class="glass-panel h-100" style="padding: 5rem 3rem; text-align: center;">
+                <div class="feature-icon-wrapper">
+                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h3 style="font-size: 1.8rem; margin-bottom: 1.5rem;">Structural Integrity</h3>
+                <p style="color: var(--text-muted); line-height: 1.8; font-size: 1.1rem; margin-bottom: 2rem;">Superior PVC composition ensuring zero warping and maximum industrial stability.</p>
+                <div class="spec-badges">
+                    <span class="spec-badge">100% Waterproof</span>
+                    <span class="spec-badge">Anti-Warp</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="glass-panel h-100" style="padding: 5rem 3rem; text-align: center;">
+                <div class="feature-icon-wrapper">
+                    <svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3L8 9l3 12"/><path d="M13 3l3 6-3 12"/><path d="M2 9h20"/></svg>
+                </div>
+                <h3 style="font-size: 1.8rem; margin-bottom: 1.5rem;">Precision Finish</h3>
+                <p style="color: var(--text-muted); line-height: 1.8; font-size: 1.1rem; margin-bottom: 2rem;">Ultra-high resolution textures with nano-protective coatings for lasting elegance.</p>
+                <div class="spec-badges">
+                    <span class="spec-badge">Scratch Resistant</span>
+                    <span class="spec-badge">UV Protected</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+            <div class="glass-panel h-100" style="padding: 5rem 3rem; text-align: center;">
+                <div class="feature-icon-wrapper">
+                    <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <h3 style="font-size: 1.8rem; margin-bottom: 1.5rem;">Efficient Install</h3>
+                <p style="color: var(--text-muted); line-height: 1.8; font-size: 1.1rem; margin-bottom: 2rem;">Proprietary interlocking systems designed to reduce project timelines significantly.</p>
+                <div class="spec-badges">
+                    <span class="spec-badge">Rapid Interlock</span>
+                    <span class="spec-badge">Low Waste</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="process" class="reveal">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+            <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 2rem;">Our Design Journey</h2>
+            <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 4rem; line-height: 1.8;">From the first consultation to the final installation, we ensure a seamless transition for your space.</p>
+            
+            <div class="process-step" data-step="1">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Conceptual Design</h4>
+                <p style="color: var(--text-muted);">Collaborative session to define the aesthetic and technical requirements of your project.</p>
+            </div>
+            <div class="process-step" data-step="2">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Material Selection</h4>
+                <p style="color: var(--text-muted);">Choosing from our elite range of textures, from organic wood grains to industrial stone.</p>
+            </div>
+            <div class="process-step" data-step="3">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Precision Execution</h4>
+                <p style="color: var(--text-muted);">Professional installation by our certified artisans ensuring perfection in every corner.</p>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="showroom-container">
+                <img src="images/showroom.png" class="showroom-img" alt="Wcomas Showroom">
+                <div class="showroom-overlay">
+                    <h3 style="color: #fff; font-size: 2.5rem; margin-bottom: 1rem;">Visit Our Showroom</h3>
+                    <p style="color: #fff; opacity: 0.8; font-size: 1.2rem; margin-bottom: 2rem;">Experience the tactile luxury of Wcomas in person.</p>
+                    <div>
+                        <a href="#contact" class="btn-premium">Book A Tour</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="louver-spotlight" class="reveal" style="padding-top: 5rem;">
+    <div class="glass-panel" style="padding: 0; border-radius: 40px; overflow: hidden;">
+        <div class="row g-0 align-items-center">
+            <div class="col-lg-7">
+                <div style="position: relative; height: 600px; overflow: hidden;">
+                    <img src="images/louvers.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Premium Charcoal Louvers">
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to right, rgba(252, 251, 247, 0.4), transparent);"></div>
+                </div>
+            </div>
+            <div class="col-lg-5 p-5 p-lg-10" style="padding: 5rem !important;">
+                <span style="color: var(--primary); font-weight: 800; letter-spacing: 4px; display: block; margin-bottom: 2rem; font-size: 0.9rem;">NEW ARRIVAL</span>
+                <h2 style="font-size: 3rem; color: var(--text-main); margin-bottom: 2rem;">Elite Louver Series</h2>
+                <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 3rem; line-height: 1.8;">
+                    Our charcoal louver panels define the modern architectural silhouette. Precision-cut slats create a rhythmic interplay of light and shadow, perfect for feature walls and external cladding.
+                </p>
+                <div class="spec-badges" style="justify-content: flex-start;">
+                    <span class="spec-badge">Matte Finish</span>
+                    <span class="spec-badge">Acoustic Logic</span>
+                    <span class="spec-badge">UV Stable</span>
+                </div>
+                <div class="mt-5">
+                    <a href="#contact" class="btn-premium">Request Sample</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="collections" class="reveal" style="background: rgba(255,255,255,0.01);">
+    <div class="text-center mb-5">
+        <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Curated Collections</h2>
+        <p style="font-size: 1.2rem; color: var(--text-muted); letter-spacing: 2px;">TRANSFORMING INTERIORS INTO ART</p>
+    </div>
+
+    <div class="product-grid mt-5">
+        <div class="product-card">
+            <img src="images/hero.png" alt="Wall Panels">
+            <div class="product-info">
+                <h4 style="font-size: 1.8rem; color: var(--primary);">Signature Series</h4>
+                <p style="color: var(--text-main); opacity: 0.8;">Premium wall cladding for high-end corporate & residential projects.</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img src="images/walnut.png" alt="Walnut Panels">
+            <div class="product-info">
+                <h4 style="font-size: 1.8rem; color: var(--primary);">Organic Textures</h4>
+                <p style="color: var(--text-main); opacity: 0.8;">Authentic wood grains with the durability of reinforced PVC.</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img src="images/marble.png" alt="Marble Panels">
+            <div class="product-info">
+                <h4 style="font-size: 1.8rem; color: var(--primary);">Eternal Stone</h4>
+                <p style="color: var(--text-main); opacity: 0.8;">The majesty of Carrara marble in a lightweight, durable format.</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img src="images/concrete.png" alt="Concrete Panels">
+            <div class="product-info">
+                <h4 style="font-size: 1.8rem; color: var(--primary);">Industrial Raw</h4>
+                <p style="color: var(--text-main); opacity: 0.8;">Modern concrete finishes for urban and minimalist spaces.</p>
+            </div>
+        </div>
+        <div class="product-card" data-type="louver">
+            <img src="images/louvers.png" alt="Louver Panels">
+            <div class="product-info">
+                <h4 style="font-size: 1.8rem; color: var(--primary);">Elite Louvers</h4>
+                <p style="color: var(--text-main); opacity: 0.8;">Sophisticated vertical slats for architectural depth and modern shadow play.</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img src="images/cabinet.png" alt="Cabinet Panels">
+            <div class="product-info">
+                <h4 style="font-size: 1.8rem; color: var(--primary);">Bespoke Surfaces</h4>
+                <p style="color: var(--text-main); opacity: 0.8;">Custom furniture finishes that redefine modern cabinetry.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="testimonials" class="reveal">
+    <div class="text-center mb-5">
+        <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Industry Feedback</h2>
+        <p style="font-size: 1.2rem; color: var(--text-muted); letter-spacing: 2px;">TRUSTED BY THE WORLD'S BEST ARCHITECTS</p>
+    </div>
+    
+    <div class="row g-5">
+        <div class="col-md-6">
+            <div class="glass-panel testimonial-card">
+                <p class="testimonial-quote">"Wcomas panels have completely changed our approach to commercial office design. The speed of installation is a game-changer."</p>
+                <div class="testimonial-author">
+                    <div class="author-img">JD</div>
+                    <div>
+                        <h5 style="margin: 0; color: var(--primary);">Julian Dash</h5>
+                        <small style="color: var(--text-muted);">Lead Architect, Dash & Partners</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="glass-panel testimonial-card">
+                <p class="testimonial-quote">"The texture depth is incredible. You can't tell it's PVC until you touch it—it feels and looks like premium stone."</p>
+                <div class="testimonial-author">
+                    <div class="author-img">SR</div>
+                    <div>
+                        <h5 style="margin: 0; color: var(--primary);">Sarah Reed</h5>
+                        <small style="color: var(--text-muted);">Interior Designer, Luxe Spaces</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="reveal">
+    <div class="glass-panel" style="overflow: hidden; padding: 0;">
+        <div class="row g-0">
+            <div class="col-lg-6 p-5 p-lg-10" style="padding: 5rem !important;">
+                <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Inquire</h2>
+                <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 4rem;">Let's discuss your next landmark project.</p>
+                
+                @if (submitted)
+                {
+                    <div class="reveal" style="text-align: center; padding: 3rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;">Thank You</h3>
+                        <p style="color: var(--text-muted);">Your inquiry has been received. Our team will contact you shortly.</p>
+                        <button type="button" class="btn-premium mt-4" @onclick="() => submitted = false">Submit Another</button>
+                    </div>
+                }
+                else
+                {
+                    <form @onsubmit="SubmitInquiry">
+                        <div class="mb-5">
+                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">FULL NAME</label>
+                            <input type="text" class="form-input" placeholder="Winston Churchill" @bind="newInquiry.Name" required>
+                        </div>
+                        <div class="mb-5">
+                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">EMAIL ADDRESS</label>
+                            <input type="email" class="form-input" placeholder="office@company.com" @bind="newInquiry.Email" required>
+                        </div>
+                        <div class="mb-5">
+                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">PROJECT SUMMARY</label>
+                            <textarea class="form-input" rows="5" placeholder="Tell us about your requirements..." @bind="newInquiry.Message" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-premium px-5 py-3" disabled="@isSubmitting">
+                            @(isSubmitting ? "Submitting..." : "Submit Inquiry")
+                        </button>
+                    </form>
+                }
+            </div>
+            <div class="col-lg-6 d-none d-lg-block" style="background: url('images/hero.png'); background-size: cover; background-position: left; position: relative;">
+                <div style="position: absolute; inset: 0; background: linear-gradient(to right, var(--bg-dark), transparent);"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer style="padding: 8rem 4rem 4rem; border-top: 1px solid var(--glass-border);">
+    <div class="footer-grid mb-5">
+        <div>
+            <h2 style="color: var(--primary); margin-bottom: 2rem;">WCOMAS</h2>
+            <p style="color: var(--text-muted); line-height: 1.8;">The global standard in elite PVC architectural solutions. Redefining interior luxury since 2010.</p>
+        </div>
+        <div>
+            <h5 style="color: var(--primary); margin-bottom: 2rem; letter-spacing: 2px;">NAVIGATION</h5>
+            <ul style="list-style: none; padding: 0;">
+                <li class="mb-3"><a href="#" style="color: var(--text-muted); text-decoration: none;">Engineering</a></li>
+                <li class="mb-3"><a href="#" style="color: var(--text-muted); text-decoration: none;">Process</a></li>
+                <li class="mb-3"><a href="#" style="color: var(--text-muted); text-decoration: none;">Collections</a></li>
+                <li class="mb-3"><a href="#" style="color: var(--text-muted); text-decoration: none;">Contact</a></li>
+            </ul>
+        </div>
+        <div>
+            <h5 style="color: var(--primary); margin-bottom: 2rem; letter-spacing: 2px;">CONTACT</h5>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">102 Elite Avenue, Design District</p>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">London, UK</p>
+            <p style="color: var(--text-muted);">office@wcomas.com</p>
+        </div>
+        <div>
+            <h5 style="color: var(--primary); margin-bottom: 2rem; letter-spacing: 2px;">SOCIAL</h5>
+            <div class="d-flex gap-4">
+                <a href="#" style="color: var(--text-muted); text-decoration: none;">INSTA</a>
+                <a href="#" style="color: var(--text-muted); text-decoration: none;">LI</a>
+                <a href="#" style="color: var(--text-muted); text-decoration: none;">PIN</a>
+            </div>
+        </div>
+    </div>
+    <div style="border-top: 1px solid var(--glass-border); padding-top: 4rem; text-align: center;">
+        <p style="color: var(--text-muted); font-size: 0.9rem;">&copy; 2026 WCOMAS ELITE SOLUTIONS. ALL RIGHTS RESERVED. DESIGNED FOR EXCELLENCE.</p>
+    </div>
+</footer>
+
+@code {
+    private Inquiry newInquiry = new();
+    private bool isSubmitting = false;
+    private bool submitted = false;
+
+    private async Task SubmitInquiry()
+    {
+        isSubmitting = true;
+        try
+        {
+            await InquiryService.SaveInquiryAsync(newInquiry);
+            newInquiry = new();
+            submitted = true;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

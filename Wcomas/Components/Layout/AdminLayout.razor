@@ -1,0 +1,118 @@
+@using Microsoft.AspNetCore.Components.Routing
+@inherits LayoutComponentBase
+
+<div class="admin-wrapper">
+    <aside class="admin-sidebar shadow">
+        <div class="p-4 mb-3">
+            <h4 class="fw-800 text-white m-0">WCOMAS</h4>
+            <div class="small fw-bold text-premium">ADMIN PANEL</div>
+        </div>
+
+        <nav class="admin-nav px-3">
+            <NavLink class="admin-nav-link" href="/admin" Match="NavLinkMatch.All">
+                <i class="bi bi-speedometer2 me-3"></i> Dashboard
+            </NavLink>
+            <NavLink class="admin-nav-link" href="/admin/leads">
+                <i class="bi bi-envelope-paper me-3"></i> Leads
+            </NavLink>
+            <NavLink class="admin-nav-link" href="/admin/categories">
+                <i class="bi bi-tag me-3"></i> Categories
+            </NavLink>
+            <NavLink class="admin-nav-link" href="/admin/brands">
+                <i class="bi bi-patch-check me-3"></i> Brands
+            </NavLink>
+            <NavLink class="admin-nav-link" href="/admin/patterns">
+                <i class="bi bi-grid-3x3 me-3"></i> Patterns
+            </NavLink>
+            <NavLink class="admin-nav-link" href="/admin/products">
+                <i class="bi bi-box-seam me-3"></i> Products
+            </NavLink>
+            <div class="nav-divider my-3"></div>
+            <a class="admin-nav-link" href="/" target="_blank">
+                <i class="bi bi-arrow-up-right-square me-3"></i> View Site
+            </a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header d-flex align-items-center justify-content-end px-4">
+            <div class="user-profile d-flex align-items-center gap-3">
+                <div class="text-end">
+                    <div class="fw-bold small">Administrator</div>
+                    <div class="text-muted" style="font-size: 0.7rem;">wcomasadmin</div>
+                </div>
+                <div class="avatar shadow-sm">WA</div>
+            </div>
+        </header>
+        
+        <div class="admin-content p-4">
+            @Body
+        </div>
+    </main>
+</div>
+
+<style>
+    :root {
+        --admin-bg: #f8fafc;
+        --sidebar-bg: #0f172a;
+        --nav-active: rgba(255,184,0,0.1);
+    }
+    
+    .admin-wrapper { display: flex; min-height: 100vh; background: var(--admin-bg); }
+    
+    .admin-sidebar {
+        width: 280px;
+        background: var(--sidebar-bg);
+        color: white;
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+    }
+    
+    .admin-main { flex: 1; margin-left: 280px; }
+    
+    .admin-header {
+        height: 70px;
+        background: white;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .admin-nav-link {
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 1.2rem;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        border-radius: 12px;
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    
+    .admin-nav-link:hover {
+        color: white;
+        background: rgba(255,255,255,0.05);
+    }
+    
+    .admin-nav-link.active {
+        color: var(--primary);
+        background: var(--nav-active);
+        font-weight: 600;
+    }
+    
+    .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 0 1.2rem; }
+    
+    .avatar {
+        width: 40px; height: 40px;
+        background: var(--primary);
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+    }
+    
+    .fw-800 { font-weight: 800; }
+    .text-premium { color: var(--primary); letter-spacing: 2px; }
+</style>

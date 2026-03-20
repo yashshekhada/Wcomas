@@ -1,0 +1,189 @@
+@page "/admin/brands"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@using Wcomas.Models
+@using Wcomas.Services
+@inject BrandService BrandService
+@inject IWebHostEnvironment Env
+@layout Wcomas.Components.Layout.AdminLayout
+@rendermode InteractiveServer
+
+<PageTitle>Admin | Brands</PageTitle>
+
+<div class="reveal active">
+    @if (showForm)
+    {
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="glass-panel p-4 shadow-sm border-0">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-700 m-0" style="color: var(--primary);">@(editingBrand.Id == 0 ? "Add New Brand" : "Edit Brand")</h4>
+                        <button class="btn btn-link text-muted p-0" @onclick="CancelEdit"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small uppercase fw-bold">Brand Name</label>
+                        <input @bind="editingBrand.Name" class="form-control form-glass" placeholder="e.g. Wcomas Premium" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small uppercase fw-bold">Description</label>
+                        <textarea @bind="editingBrand.Description" class="form-control form-glass" rows="3" placeholder="Brand story..."></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small uppercase fw-bold">Brand Logo</label>
+                        <InputFile OnChange="HandleFileSelected" class="form-control form-glass" />
+                        @if (!string.IsNullOrEmpty(editingBrand.LogoUrl))
+                        {
+                            <div class="mt-2 text-center p-2 border rounded" style="background:#f8f9fa;">
+                                <img src="@editingBrand.LogoUrl" alt="Preview" style="max-height:100px; border-radius:8px;" />
+                            </div>
+                        }
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn-premium w-100 py-3" @onclick="SaveBrand">@(editingBrand.Id == 0 ? "CREATE BRAND" : "UPDATE BRAND")</button>
+                        <button class="btn btn-outline-secondary w-100 py-3" style="border-radius: 30px; font-size: 0.8rem;" @onclick="CancelEdit">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="glass-panel p-4 shadow-sm border-0">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-700 m-0">Registered Brands</h5>
+                        <button class="btn-premium px-4" @onclick="() => showForm = true">
+                            <i class="bi bi-plus-lg me-2"></i> ADD BRAND
+                        </button>
+                    </div>
+                    @if (brands == null)
+                    {
+                        <p class="text-muted">Loading brands...</p>
+                    }
+                    else if (!brands.Any())
+                    {
+                        <div class="text-center py-5 border-dashed" style="border-radius: 20px;">
+                            <p class="text-muted m-0">No brands registered yet.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            @foreach (var brand in brands)
+                            {
+                                <div class="col-12">
+                                    <div class="glass-panel d-flex justify-content-between align-items-center p-3 border-0 shadow-sm" style="background: rgba(0,0,0,0.01);">
+                                        <div class="d-flex align-items-center">
+                                            <div class="brand-logo-mini me-3 shadow-sm">
+                                                @if (!string.IsNullOrEmpty(brand.LogoUrl))
+                                                {
+                                                    <img src="@brand.LogoUrl" alt="@brand.Name" style="width: 100%; height: 100%; object-fit: contain;">
+                                                }
+                                                else
+                                                {
+                                                    @brand.Name.Substring(0, 1).ToUpper()
+                                                }
+                                            </div>
+                                            <div>
+                                                <h6 class="m-0 fw-700" style="color: var(--primary);">@brand.Name</h6>
+                                                <small class="text-muted">@brand.Description</small>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-3 align-items-center">
+                                            <button class="btn btn-link p-0 text-muted" @onclick="() => EditBrand(brand)"><i class="bi bi-pencil"></i></button>
+                                            <button class="btn btn-link p-0 text-danger" @onclick="() => DeleteBrand(brand.Id)"><i class="bi bi-trash"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .form-glass { background: #fdfdfd !important; border: 1px solid rgba(0,0,0,0.05) !important; border-radius: 12px !important; padding: 0.8rem !important; }
+    .form-glass:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 4px rgba(0,0,0,0.02) !important; }
+    .fw-700 { font-weight: 700; }
+    .border-dashed { border: 2px dashed rgba(0,0,0,0.05); }
+    .brand-logo-mini { width: 45px; height: 45px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary); font-size: 1.2rem; overflow: hidden; }
+</style>
+
+@code {
+    private List<Brand>? brands;
+    private Brand editingBrand = new();
+    private bool showForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBrands();
+    }
+
+    private async Task LoadBrands()
+    {
+        brands = await BrandService.GetAllBrandsAsync();
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+            var path = Path.Combine(Env.WebRootPath, "uploads", "brands", fileName);
+            
+            using var stream = file.OpenReadStream(10 * 1024 * 1024); // 10MB max
+            using var fileStream = new FileStream(path, FileMode.Create);
+            await stream.CopyToAsync(fileStream);
+            
+            editingBrand.LogoUrl = $"/uploads/brands/{fileName}";
+        }
+    }
+
+    private async Task SaveBrand()
+    {
+        if (string.IsNullOrWhiteSpace(editingBrand.Name)) return;
+
+        if (editingBrand.Id == 0)
+        {
+            await BrandService.CreateBrandAsync(editingBrand);
+        }
+        else
+        {
+            await BrandService.UpdateBrandAsync(editingBrand);
+        }
+
+        editingBrand = new();
+        showForm = false;
+        await LoadBrands();
+    }
+
+    private void EditBrand(Brand brand)
+    {
+        editingBrand = new Brand
+        {
+            Id = brand.Id,
+            Name = brand.Name,
+            Description = brand.Description,
+            LogoUrl = brand.LogoUrl,
+            CreatedAt = brand.CreatedAt
+        };
+        showForm = true;
+    }
+
+    private async Task DeleteBrand(int id)
+    {
+        await BrandService.DeleteBrandAsync(id);
+        await LoadBrands();
+    }
+
+    private void CancelEdit()
+    {
+        editingBrand = new();
+        showForm = false;
+    }
+}

@@ -1,0 +1,72 @@
+@using Wcomas.Models
+@using Wcomas.Services
+@inject CategoryService CategoryService
+@rendermode InteractiveServer
+
+<nav class="top-row px-4 navbar navbar-dark navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">WCOMAS</a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="" Match="NavLinkMatch.All">HOME</NavLink>
+                </li>
+                @if (categories != null)
+                {
+                    @foreach (var cat in categories)
+                    {
+                        <li class="nav-item">
+                            <NavLink class="nav-link px-3" href="@($"/category/{cat.Id}")">@cat.Name.ToUpper()</NavLink>
+                        </li>
+                    }
+                }
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="#engineering">ENGINEERING</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="#process">PROCESS</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="#collections">COLLECTIONS</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="#contact">CONTACT</NavLink>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar-nav .nav-link {
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+        transition: color 0.3s ease;
+    }
+
+    .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active {
+        color: var(--primary) !important;
+    }
+
+    .navbar-brand {
+        font-weight: 800;
+        color: var(--text-main) !important;
+        font-size: 1.5rem;
+    }
+</style>
+
+@code {
+    private List<Category>? categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoryService.GetAllCategoriesAsync();
+    }
+}

@@ -1,0 +1,63 @@
+@page "/login"
+@layout Wcomas.Components.Layout.MainLayout
+
+<PageTitle>Wcomas | Login</PageTitle>
+
+<div class="content d-flex align-items-center justify-content-center" style="min-height: 100vh; background: var(--bg-light);">
+    <div class="reveal active" style="width: 100%; max-width: 450px; padding: 0 1.5rem;">
+        <div class="glass-panel text-center" style="padding: 3.5rem 2.5rem;">
+            <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Admin Access</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2.5rem;">PLEASE AUTHENTICATE TO CONTINUE</p>
+
+            <form action="/auth/login?returnUrl=@ReturnUrl" method="post">
+                <div class="text-start mb-3">
+                    <label class="form-label color-muted small uppercase">Username</label>
+                    <input name="username" type="text" class="form-control form-glass" placeholder="e.g. admin" required />
+                </div>
+
+                <div class="text-start mb-4">
+                    <label class="form-label color-muted small uppercase">Security Key</label>
+                    <input name="password" type="password" class="form-control form-glass" placeholder="Enter key..." required />
+                </div>
+
+                @if (!string.IsNullOrEmpty(Error))
+                {
+                    <div class="alert alert-danger py-2 mb-4" style="font-size: 0.8rem; border-radius: 10px;">
+                        @Error
+                    </div>
+                }
+
+                <button type="submit" class="btn-premium w-100 py-3" style="font-size: 1rem;">AUTHORIZE</button>
+            </form>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/" class="color-muted small" style="text-decoration: none; letter-spacing: 1px;">&larr; RETURN TO SITE</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-glass {
+        background: rgba(0, 0, 0, 0.03) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        border-radius: 12px !important;
+        color: var(--text-main) !important;
+        padding: 1rem !important;
+    }
+    .form-glass:focus {
+        background: white !important;
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 4px rgba(0,0,0,0.02) !important;
+    }
+</style>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Error { get; set; }
+}

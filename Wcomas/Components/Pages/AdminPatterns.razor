@@ -1,0 +1,181 @@
+@page "/admin/patterns"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@using Microsoft.EntityFrameworkCore
+@using Wcomas.Models
+@using Wcomas.Services
+@inject PatternService PatternService
+@inject IWebHostEnvironment Env
+@layout Wcomas.Components.Layout.AdminLayout
+@rendermode InteractiveServer
+
+<PageTitle>Admin | Patterns</PageTitle>
+
+<div class="reveal active">
+    @if (showForm)
+    {
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="glass-panel p-4 shadow-sm border-0">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-700 m-0" style="color: var(--primary);">
+                            @(editing.Id == 0 ? "Add New Pattern" : "Edit Pattern")
+                        </h4>
+                        <button class="btn btn-link text-muted p-0" @onclick="CancelEdit">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Title *</label>
+                        <input @bind="editing.Title" class="form-control form-glass" placeholder="e.g. Linen Finish" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Pattern Image</label>
+                        <InputFile OnChange="HandleFileSelected" class="form-control form-glass" />
+                        @if (!string.IsNullOrEmpty(editing.ImageUrl))
+                        {
+                            <div class="mt-2 text-center p-2 border rounded" style="background:#f8f9fa;">
+                                <img src="@editing.ImageUrl" alt="Preview" style="max-height:100px; border-radius:8px;" />
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Description</label>
+                        <textarea @bind="editing.Description" class="form-control form-glass" rows="3"></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button class="btn-premium w-100 py-3" @onclick="Save">
+                            @(editing.Id == 0 ? "CREATE PATTERN" : "UPDATE PATTERN")
+                        </button>
+                        <button class="btn btn-outline-secondary py-3 px-4" style="border-radius:30px;" @onclick="CancelEdit">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="glass-panel p-4 shadow-sm border-0">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-700 m-0">Patterns</h5>
+                    <div class="text-muted small">@patterns?.Count items</div>
+                </div>
+                <button class="btn-premium px-4" @onclick="StartAdd">
+                    <i class="bi bi-plus-lg me-2"></i> ADD PATTERN
+                </button>
+            </div>
+
+            @if (patterns == null)
+            {
+                <p class="text-muted">Loading...</p>
+            }
+            else if (!patterns.Any())
+            {
+                <div class="text-center py-5 border-dashed" style="border-radius:20px;">
+                    <p class="text-muted m-0">No patterns yet.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr class="text-muted small text-uppercase">
+                                <th>Preview</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in patterns)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="pattern-img shadow-sm">
+                                            @if (!string.IsNullOrEmpty(p.ImageUrl)) {
+                                                <img src="@p.ImageUrl" alt="@p.Title" style="width:100%;height:100%;object-fit:cover;" />
+                                            } else {
+                                                <i class="bi bi-grid-3x3 text-muted"></i>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold">@p.Title</td>
+                                    <td class="text-muted small">@p.Description</td>
+                                    <td class="text-end">
+                                        <button class="btn btn-link p-0 text-muted me-3" @onclick="() => Edit(p)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-link p-0 text-danger" @onclick="() => Delete(p.Id)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .form-glass { background: #fdfdfd !important; border: 1px solid rgba(0,0,0,0.08) !important; border-radius: 12px !important; padding: 0.8rem !important; }
+    .pattern-img { width: 50px; height: 50px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .border-dashed { border: 2px dashed rgba(0,0,0,0.06); }
+    .fw-700 { font-weight: 700; }
+</style>
+
+@code {
+    private List<Pattern>? patterns;
+    private Pattern editing = new();
+    private bool showForm = false;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load() => patterns = await PatternService.GetAllPatternsAsync();
+
+    private void StartAdd() { editing = new(); showForm = true; }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+            var path = Path.Combine(Env.WebRootPath, "uploads", "patterns", fileName);
+            
+            using var stream = file.OpenReadStream(10 * 1024 * 1024); // 10MB max
+            using var fileStream = new FileStream(path, FileMode.Create);
+            await stream.CopyToAsync(fileStream);
+            
+            editing.ImageUrl = $"/uploads/patterns/{fileName}";
+        }
+    }
+
+    private void Edit(Pattern p) { 
+        editing = new Pattern { Id = p.Id, Title = p.Title, Description = p.Description, ImageUrl = p.ImageUrl };
+        showForm = true; 
+    }
+
+    private void CancelEdit() { showForm = false; }
+
+    private async Task Save() {
+        if (string.IsNullOrWhiteSpace(editing.Title)) return;
+        if (editing.Id == 0) await PatternService.CreatePatternAsync(editing);
+        else await PatternService.UpdatePatternAsync(editing);
+        showForm = false;
+        await Load();
+    }
+
+    private async Task Delete(int id) {
+        await PatternService.DeletePatternAsync(id);
+        await Load();
+    }
+}
