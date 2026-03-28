@@ -1,18 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap');
 
 :root {
-    --primary: #1d1d1f; /* Apple Black */
-    --accent: #b89050; /* Champagne Gold */
+    --primary: #121214; 
+    --primary-light: #2c2c31;
+    --accent: #b89050; 
     --accent-light: #d4b884;
-    --bg-light: #f5f5f7; /* Apple Off-white */
+    --bg-light: #fcfcfd; 
     --bg-card: #ffffff;
-    --text-main: #1d1d1f;
-    --text-muted: #86868b; /* Apple Gray */
+    --text-main: #121214;
+    --text-muted: #86868b;
     --glass: rgba(255, 255, 255, 0.7);
     --glass-border: rgba(0, 0, 0, 0.05);
     --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     --shadow: 0 4px 12px rgba(0,0,0,0.05);
-    --shadow-hover: 0 20px 40px rgba(0,0,0,0.1);
+    --shadow-hover: 0 40px 80px rgba(0,0,0,0.12);
 }
 
 * {
@@ -169,7 +170,7 @@ main {
 
 /* Navigation */
 .top-row {
-    height: 6rem;
+    height: 90px;
     display: flex;
     align-items: center;
     position: fixed;
@@ -179,19 +180,16 @@ main {
     transition: var(--transition);
     padding: 0 4rem;
     justify-content: space-between;
-    background: rgba(252, 251, 247, 0.8);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-bottom: 1px solid rgba(184, 144, 80, 0.1);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .top-row.scrolled {
-    height: 4.5rem;
-    background: rgba(252, 251, 247, 0.9) !important;
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--glass-border);
-    padding: 0 4rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    height: 70px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.05);
 }
 
 .nav-links {
@@ -240,7 +238,8 @@ main {
 /* Hero Section */
 .hero-section {
     position: relative;
-    height: 100vh;
+    height: 50vh;
+    min-height: 400px;
     width: 100%;
     display: flex;
     align-items: center;

@@ -1,0 +1,369 @@
+@page "/category/{Id:int}"
+@using Wcomas.Models
+@using Wcomas.Services
+@inject CategoryService CategoryService
+@inject ProductService ProductService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>@(category?.Name ?? "Category") - Premium Collection | WCOMAS</PageTitle>
+
+<HeadContent>
+    @if (category != null)
+    {
+        var catUrl = $"https://wcomas.com/category/{category.Id}";
+        var absImageUrl = "https://wcomas.com" + (string.IsNullOrEmpty(category.ImageUrl) ? "/images/hero.png" : category.ImageUrl);
+        var catDesc = $"Explore our exclusive {category.Name} collection at WCOMAS. Discover premium designs and top-quality materials for your space. Request a quote today.";
+
+        <meta name="description" content="@catDesc" />
+        <meta property="og:title" content="@category.Name - Premium Collection | WCOMAS" />
+        <meta property="og:description" content="@catDesc" />
+        <meta property="og:image" content="@absImageUrl" />
+        <meta property="og:url" content="@catUrl" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+
+        @if (products != null && products.Any())
+        {
+            var itemListElements = products.Select((p, index) => new
+            {
+                __type = "ListItem",
+                position = index + 1,
+                item = new
+                {
+                    __type = "Product",
+                    name = p.Name,
+                    url = $"https://wcomas.com/product/{p.Id}",
+                    image = "https://wcomas.com" + p.ImageUrl,
+                    offers = new
+                    {
+                        __type = "Offer",
+                        priceCurrency = "INR",
+                        price = p.Price.ToString(),
+                        availability = "https://schema.org/InStock"
+                    }
+                }
+            }).ToList();
+
+            var schemaList = new
+            {
+                __context = "https://schema.org",
+                __type = "ItemList",
+                itemListElement = itemListElements
+            };
+            
+            // Replace __ with @ to avoid razor parsing issues with dynamics
+            var jsonString = System.Text.Json.JsonSerializer.Serialize(schemaList).Replace("\"__", "\"@");
+
+            <script type="application/ld+json">
+                @((MarkupString)jsonString)
+            </script>
+        }
+    }
+</HeadContent>
+
+@if (category == null)
+{
+    <div class="container py-5 text-center vh-100 d-flex align-items-center justify-content-center">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="category-hero" style="background-image: url('@(string.IsNullOrEmpty(category.ImageUrl) ? "images/hero.png" : category.ImageUrl)');">
+        <div class="hero-overlay"></div>
+        <div class="hero-content reveal active">
+            <span class="category-label text-uppercase">Exclusive Collection</span>
+            <h1 class="category-title text-uppercase">@category.Name</h1>
+            <div class="category-divider"></div>
+            @if (!string.IsNullOrEmpty(category.Description))
+            {
+                <p class="category-description">@category.Description</p>
+            }
+        </div>
+    </div>
+
+    <section class="products-section py-5">
+        <div class="container-fluid px-lg-5 pb-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 reveal active px-2">
+                <div class="mb-3 mb-md-0">
+                    <h2 class="display-5 fw-900 mb-0 text-dark" style="letter-spacing:-1.5px;">Discover Design</h2>
+                    <p class="text-muted mt-2 mb-0" style="letter-spacing: 3px; font-size: 0.75rem; font-weight: 700; text-transform:uppercase;">EXPLORE OUR PREMIUM SELECTION</p>
+                </div>
+                <div class="product-count px-4 py-2 rounded-pill glass-card text-dark fw-800" style="font-size: 0.8rem; letter-spacing: 1px;">
+                    <span class="text-primary">@products?.Count</span> RESULTS
+                </div>
+            </div>
+
+            @if (products == null || !products.Any())
+            {
+                <div class="glass-panel text-center py-5 reveal active rounded-4 border mx-2">
+                    <i class="bi bi-box-seam display-1 text-muted mb-4 d-block"></i>
+                    <h3 class="fw-bold">No Products Found</h3>
+                    <p class="text-muted">We're currently updating this collection. Check back soon!</p>
+                    <a href="/" class="btn btn-dark rounded-pill px-5 py-3 mt-3 fw-bold">Return Home</a>
+                </div>
+            }
+            else
+            {
+                <div class="row g-4 g-lg-5 px-2">
+                    @foreach (var p in products)
+                    {
+                        <div class="col-xl-4 col-lg-4 col-md-6 col-12 reveal active">
+                            <ProductCard Product="p" />
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+}
+
+<style>
+    .category-hero {
+        height: 60vh;
+        min-height: 500px;
+        padding-top: 6rem; /* Account for fixed navbar */
+        position: relative;
+
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+    }
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.85) 100%);
+        backdrop-filter: blur(2px);
+    }
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        padding: 0 2rem;
+        animation: fadeInUp 1s ease-out forwards;
+    }
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .category-label {
+        font-weight: 700;
+        letter-spacing: 4px;
+        font-size: 0.85rem;
+        color: var(--accent-light, #e0c899);
+        display: block;
+        margin-bottom: 1rem;
+    }
+    .category-title {
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 900;
+        margin-bottom: 0;
+        letter-spacing: -1px;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .category-divider {
+        width: 60px;
+        height: 3px;
+        background: var(--accent-light, #e0c899);
+        margin: 1.5rem auto;
+        border-radius: 2px;
+    }
+    .category-description {
+        font-size: 1.15rem;
+        opacity: 0.9;
+        font-weight: 300;
+        line-height: 1.7;
+        color: #e2e2e2;
+    }
+
+    /* Product Cards Update */
+    .products-section {
+        background-color: #fdfdfd;
+    }
+    .product-listing-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+    }
+    .product-listing-card a {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        color: inherit;
+    }
+    .product-listing-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+        border-color: rgba(0,0,0,0.1);
+    }
+    .product-img-wrapper {
+        position: relative;
+        height: 280px;
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+    .product-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s cubic-bezier(0.2, 0, 0.2, 1);
+    }
+    .product-listing-card:hover .product-img-wrapper img {
+        transform: scale(1.08);
+    }
+    .product-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.4s ease;
+        backdrop-filter: blur(2px);
+    }
+    .product-listing-card:hover .product-overlay {
+        opacity: 1;
+    }
+    .btn-view-details {
+        background: white;
+        color: black;
+        padding: 0.8rem 1.8rem;
+        border-radius: 30px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        font-size: 0.75rem;
+        transform: translateY(20px);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .product-listing-card:hover .btn-view-details {
+        transform: translateY(0);
+    }
+    .product-price-tag {
+        position: absolute;
+        top: 1.25rem;
+        right: 1.25rem;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        padding: 0.4rem 1rem;
+        border-radius: 30px;
+        font-weight: 700;
+        color: #111;
+        font-size: 0.9rem;
+        z-index: 2;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .product-listing-info {
+        padding: 2rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .product-code {
+        color: #888;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 1.5px;
+        margin-bottom: 0.75rem;
+        display: block;
+        text-transform: uppercase;
+    }
+    .product-name {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        line-height: 1.3;
+    }
+    .product-desc-short {
+        color: #666;
+        line-height: 1.7;
+        margin-bottom: 0;
+        font-size: 0.95rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .text-link {
+        color: #111;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .transition-icon {
+        transition: transform 0.3s ease;
+    }
+    .product-listing-card:hover .transition-icon {
+        transform: translateX(5px);
+    }
+
+    @@media (max-width: 768px) {
+        .category-hero {
+            height: 40vh;
+            min-height: 300px;
+        }
+        .hero-content {
+            padding: 0 1.5rem;
+        }
+        .product-img-wrapper {
+            height: 250px;
+        }
+        .product-listing-info {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Category? category;
+    private List<Product>? products;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        category = await CategoryService.GetCategoryByIdAsync(Id);
+        if (category != null)
+        {
+            var allProducts = await ProductService.GetAllProductsAsync();
+            products = allProducts.Where(p => p.CategoryId == Id).ToList();
+        }
+    }
+
+    private string GetShortDescription(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return "No description available.";
+        
+        // Remove HTML tags
+        var noHtml = System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
+        
+        // Decode HTML entities (like &nbsp;, &amp;)
+        var decoded = System.Net.WebUtility.HtmlDecode(noHtml);
+        
+        // Clean up excessive whitespace
+        decoded = System.Text.RegularExpressions.Regex.Replace(decoded, @"\s+", " ").Trim();
+        
+        return decoded;
+    }
+}

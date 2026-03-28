@@ -1,0 +1,387 @@
+@page "/product/{Id:int}"
+@using Wcomas.Models
+@using Wcomas.Services
+@inject ProductService ProductService
+@inject InquiryService InquiryService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>@(product?.Name ?? "Product") | WCOMAS</PageTitle>
+
+<HeadContent>
+    @if (product != null)
+    {
+        var cleanDesc = GetPlainText(product.Description ?? product.Name);
+        var shortDesc = cleanDesc.Length > 155 ? cleanDesc.Substring(0, 150) + "..." : cleanDesc;
+        var absImageUrl = "https://wcomas.com" + product.ImageUrl;
+        var prodUrl = $"https://wcomas.com/product/{product.Id}";
+        
+        <meta name="description" content="@shortDesc" />
+        <meta property="og:title" content="@product.Name | WCOMAS" />
+        <meta property="og:description" content="@shortDesc" />
+        <meta property="og:image" content="@absImageUrl" />
+        <meta property="og:url" content="@prodUrl" />
+        <meta property="og:type" content="product" />
+        <meta name="twitter:card" content="summary_large_image" />
+        
+        <script type="application/ld+json">
+        {
+          "@@context": "https://schema.org/",
+          "@@type": "Product",
+          "name": "@(product.Name.Replace("\"", "\\\""))",
+          "image": [
+            "@absImageUrl"
+           ],
+          "description": "@(System.Text.Json.JsonEncodedText.Encode(cleanDesc))",
+          "sku": "@(product.Code ?? product.Id.ToString())",
+          "brand": {
+            "@@type": "Brand",
+            "name": "@(product.Brand?.Name ?? "WCOMAS")"
+          },
+          "offers": {
+            "@@type": "Offer",
+            "url": "@prodUrl",
+            "priceCurrency": "INR",
+            "price": "@product.Price",
+            "availability": "https://schema.org/InStock",
+            "itemCondition": "https://schema.org/NewCondition"
+          }
+        }
+        </script>
+    }
+</HeadContent>
+
+@if (product == null)
+{
+    <div class="container-fluid py-20 text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <section class="product-details-section">
+        <div class="container-fluid px-lg-10">
+            <div class="row g-5 g-lg-10">
+                @* Image Gallery *@
+                <div class="col-lg-7 reveal active">
+                    <div class="main-product-image-container glass-panel p-0 overflow-hidden shadow-lg" style="border-radius: 40px; background: #fdfdfd; position: relative; height: 600px;">
+                        @if (show3D && !string.IsNullOrEmpty(product.ModelUrl))
+                        {
+                            <iframe src="/viewer.html?model=@product.ModelUrl" style="width: 100%; height: 100%; border: none;"></iframe>
+                        }
+                        else
+                        {
+                            <img src="@(string.IsNullOrEmpty(activeImageUrl) ? product.ImageUrl : activeImageUrl)" class="main-display-img animate-fade-in" alt="@product.Name" style="width: 100%; height: 100%; object-fit: cover;" />
+                        }
+                    </div>
+                    
+                    <div class="thumbnail-grid mt-4 d-flex align-items-center gap-3 overflow-auto pb-2">
+                        @if (!string.IsNullOrEmpty(product.ModelUrl))
+                        {
+                            <div class="thumb-item 3d-thumb @(show3D ? "active" : "")" @onclick="() => show3D = true">
+                                <div class="thumb-3d-icon">
+                                    <i class="bi bi-box"></i>
+                                    <span class="small fw-800">3D</span>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="thumb-item @(!show3D && activeImageUrl == product.ImageUrl ? "active" : "")" @onclick="() => SetActiveImage(product.ImageUrl)">
+                            <img src="@product.ImageUrl" alt="Main" />
+                        </div>
+
+                        @if (product.Images != null)
+                        {
+                            @foreach (var img in product.Images)
+                            {
+                                <div class="thumb-item @(!show3D && activeImageUrl == img.ImageUrl ? "active" : "")" @onclick="() => SetActiveImage(img.ImageUrl)">
+                                    <img src="@img.ImageUrl" alt="Thumbnail" />
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                @* Product Info *@
+                <div class="col-lg-5 reveal active">
+                    <div class="product-sticky-info">
+                        <nav aria-label="breadcrumb" class="mb-4">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/">HOME</a></li>
+                                <li class="breadcrumb-item"><a href="/category/@product.CategoryId">@product.Category?.Name.ToUpper()</a></li>
+                            </ol>
+                        </nav>
+
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="product-badge">ELITE COLLECTION</span>
+                            @if (!string.IsNullOrEmpty(product.ModelUrl))
+                            {
+                                <a href="#3d-viewer" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-800" style="font-size: 0.65rem; letter-spacing: 1px;">VIEW IN 3D</a>
+                            }
+                        </div>
+                        
+                        <h1 class="display-5 fw-900 mb-3 text-dark">@product.Name</h1>
+                        <p class="text-muted small uppercase fw-bold mb-4 tracking-widest">SKU: @product.Code</p>
+                        
+                        @if (product.Price > 0)
+                        {
+                            <div class="product-price mb-5">
+                                <span class="price-val">₹@product.Price.ToString("N0")</span>
+                                <span class="price-suffix">/ UNIT</span>
+                            </div>
+                        }
+
+                        <div class="product-description-area mb-6">
+                            <h5 class="fw-800 mb-3 text-uppercase small tracking-widest text-primary">Overview</h5>
+                            <div class="desc-text text-muted" style="font-size: 1.1rem; line-height: 1.8;">@((MarkupString)(product.Description ?? "No description available."))</div>
+                        </div>
+
+                        <div class="specs-grid row g-4 mb-5">
+                            @if (!string.IsNullOrEmpty(product.Colors))
+                            {
+                                <div class="col-6">
+                                    <div class="spec-item glass-card p-3 rounded-4">
+                                        <label>COLORS</label>
+                                        <span>@product.Colors</span>
+                                    </div>
+                                </div>
+                            }
+                            @if (product.Pattern != null)
+                            {
+                                <div class="col-6">
+                                    <div class="spec-item glass-card p-3 rounded-4">
+                                        <label>PATTERN</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if (!string.IsNullOrEmpty(product.Pattern.ImageUrl))
+                                            {
+                                                <img src="@product.Pattern.ImageUrl" style="width: 20px; height: 20px; border-radius: 4px; object-fit: cover;" />
+                                            }
+                                            <span>@product.Pattern.Title</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="actions-area d-grid gap-3">
+                            <a href="#quick-inquiry" class="btn-premium py-4 text-center shadow-lg d-flex align-items-center justify-content-center gap-2 pulse-btn" style="font-size: 1.1rem; letter-spacing: 2px;">
+                                <i class="bi bi-cart-check-fill fs-4"></i> BUY NOW / REQUEST QUOTE
+                            </a>
+                             @if (!string.IsNullOrEmpty(product.YoutubeLink))
+                             {
+                                 <a href="@product.YoutubeLink" target="_blank" class="btn btn-outline-dark py-3 rounded-pill fw-800 border-2" style="font-size: 0.9rem; letter-spacing: 1px;">
+                                     <i class="bi bi-play-circle-fill me-2 text-danger"></i> WATCH PRODUCT VIDEO
+                                 </a>
+                             }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            @* Additional product info/specs could go here if needed *@
+
+            @* Quick Inquiry Section *@
+            <div id="quick-inquiry" class="mt-10 reveal active">
+                <div class="glass-panel border-0 shadow-lg" style="border-radius: 50px; background-color: white;">
+                    <div class="row align-items-center">
+                        <div class="col-lg-5 p-5">
+                            <span class="text-primary fw-900 small tracking-widest uppercase d-block mb-3">GET IN TOUCH</span>
+                            <h2 class="display-5 fw-900 mb-4">Elevate your space with <span class="text-primary">@product.Name</span></h2>
+                            <p class="text-muted fs-5 mb-5 opacity-75">Submit your requirements and our design consultants will reach out with a tailored proposal.</p>
+                            <div class="d-flex align-items-center gap-4">
+                                <div class="icon-circle bg-primary text-white shadow" style="width: 60px; height: 60px;"><i class="bi bi-lightning-charge-fill"></i></div>
+                                <div>
+                                    <div class="fw-900 text-dark">Fast Response</div>
+                                    <span class="small text-muted">A consultant will contact you within 2 hours</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-7 p-5">
+                            @if (submitted)
+                            {
+                                <div class="text-center py-5">
+                                    <div class="icon-circle bg-success shadow-lg mx-auto mb-4 text-white" style="width:100px; height:100px; font-size: 3rem;"><i class="bi bi-check2-all"></i></div>
+                                    <h2 class="fw-900">Proposal Request Received</h2>
+                                    <p class="text-muted fs-5">Thank you for choosing WCOMAS. We're reviewing your details now.</p>
+                                    <button class="btn btn-outline-primary rounded-pill mt-4 px-5" @onclick="() => submitted = false">Send Another Inqury</button>
+                                </div>
+                            }
+                            else
+                            {
+                                <form @onsubmit="SubmitInquiry" class="row g-4">
+                                    <div class="col-md-6">
+                                        <label class="small fw-800 text-muted uppercase tracking-widest mb-3">FULL NAME</label>
+                                        <input type="text" class="form-input py-3 px-4 border-0 bg-light" @bind="newInquiry.Name" placeholder="e.g. Alexander Pierce" required style="border-radius: 15px;" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small fw-800 text-muted uppercase tracking-widest mb-3">MOBILE NUMBER</label>
+                                        <input type="tel" class="form-input py-3 px-4 border-0 bg-light" @bind="newInquiry.Phone" placeholder="+91 98765 00000" required style="border-radius: 15px;" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="small fw-800 text-muted uppercase tracking-widest mb-3">YOUR PROJECT NEEDS</label>
+                                        <textarea class="form-input py-3 px-4 border-0 bg-light" @bind="newInquiry.Message" rows="5" placeholder="Tell us about your project or specific dimensions needed..." style="border-radius: 20px;"></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn-premium w-100 py-4 mt-3 shadow-lg" disabled="@isSubmitting" style="border-radius: 20px; font-size: 1.2rem;">
+                                            @(isSubmitting ? "PROCESSING..." : "GET QUOTE NOW")
+                                        </button>
+                                    </div>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+}
+
+<style>
+    .product-details-section { 
+        padding-top: 8rem; /* Account for fixed navbar */
+        padding-bottom: 5rem;
+        background: #fdfcf9;
+    }
+    .mt-10 { margin-top: 6rem; }
+    .mb-6 { margin-bottom: 3rem; }
+    .g-10 { --bs-gutter-x: 5rem; --bs-gutter-y: 5rem; }
+    .tracking-wider { letter-spacing: 2px; }
+    .tracking-widest { letter-spacing: 4px; }
+    .fw-800 { font-weight: 800; }
+    .fw-900 { font-weight: 900; }
+
+    .breadcrumb-item a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.8rem; letter-spacing: 1px; }
+    .breadcrumb-item.active { color: var(--primary); font-weight: 800; }
+
+    .main-product-image-container { height: 600px; border-radius: 30px; position: relative; }
+    .main-display-img { width: 100%; height: 100%; object-fit: cover; }
+
+    .model-badge {
+        position: absolute;
+        bottom: 2rem;
+        left: 2rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 0.8rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        z-index: 10;
+        color: var(--primary);
+    }
+
+    .px-lg-10 { padding-left: 6rem !important; padding-right: 6rem !important; }
+
+    .thumbnail-grid { display: flex; gap: 1rem; overflow-x: auto; padding: 0.5rem 0; }
+    .thumb-item { width: 90px; height: 90px; border-radius: 15px; overflow: hidden; cursor: pointer; border: 3px solid transparent; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .thumb-item.active { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+    .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .thumb-3d-icon { 
+        width: 100%; height: 100%; 
+        display: flex; flex-direction: column; 
+        align-items: center; justify-content: center; 
+        background: #f0f0f0; color: var(--primary); 
+        gap: 0.2rem;
+    }
+    .thumb-3d-icon i { font-size: 1.5rem; }
+    
+    .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .product-badge { background: rgba(184, 144, 80, 0.1); color: var(--accent); padding: 0.6rem 1.5rem; border-radius: 50px; font-weight: 900; font-size: 0.7rem; letter-spacing: 2px; display: inline-block; }
+    .product-price { display: flex; align-items: baseline; gap: 1rem; }
+    .price-val { font-size: 4rem; font-weight: 900; color: var(--primary); letter-spacing: -2px; }
+    .price-suffix { color: var(--text-muted); font-weight: 700; font-size: 1.2rem; }
+
+    .spec-item label { display: block; color: var(--text-muted); font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 0.75rem; text-transform: uppercase; }
+    .spec-item span { font-weight: 800; color: var(--primary); font-size: 1.2rem; }
+    
+    .glass-card { background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(5px); }
+
+    .product-sticky-info { position: sticky; top: 8rem; }
+
+    .icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+
+    @@media (max-width: 1200px) {
+        .px-lg-10 { padding-left: 2rem !important; padding-right: 2rem !important; }
+        .main-product-image-container { height: 500px; }
+    }
+
+    @@media (max-width: 991px) {
+        .product-details-section { padding-top: 6rem; }
+        .main-product-image-container { height: 450px; }
+        .product-sticky-info { position: static; }
+    }
+
+    @@keyframes pulse-animation { 
+        0% { box-shadow: 0 0 0 0 rgba(184, 144, 80, 0.4); } 
+        70% { box-shadow: 0 0 0 15px rgba(184, 144, 80, 0); } 
+        100% { box-shadow: 0 0 0 0 rgba(184, 144, 80, 0); } 
+    }
+    .pulse-btn { animation: pulse-animation 2s infinite; }
+
+</style>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Product? product;
+    private bool show3D = false;
+    private string? activeImageUrl;
+    private Inquiry newInquiry = new();
+    private bool isSubmitting = false;
+    private bool submitted = false;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        product = await ProductService.GetProductByIdAsync(Id);
+        if (product != null)
+        {
+            activeImageUrl = product.ImageUrl;
+            newInquiry.Message = $"Inquiry for Product: {product.Name} (SKU: {product.Code})";
+            
+            // Show 3D by default if available
+            if (!string.IsNullOrEmpty(product.ModelUrl))
+            {
+                show3D = true;
+            }
+        }
+    }
+
+    private void SetActiveImage(string url)
+    {
+        activeImageUrl = url;
+        show3D = false;
+    }
+
+    private async Task SubmitInquiry()
+    {
+        isSubmitting = true;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(newInquiry.Email))
+            {
+                newInquiry.Email = $"{newInquiry.Phone}@no-email.local";
+            }
+            await InquiryService.SaveInquiryAsync(newInquiry);
+            submitted = true;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private string GetPlainText(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return string.Empty;
+        var text = System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
+        return System.Web.HttpUtility.HtmlDecode(text).Trim();
+    }
+}

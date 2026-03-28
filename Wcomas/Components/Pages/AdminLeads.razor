@@ -5,6 +5,7 @@
 @using Wcomas.Models
 @using Wcomas.Services
 @inject InquiryService InquiryService
+@inject IJSRuntime JS
 @layout Wcomas.Components.Layout.AdminLayout
 @rendermode InteractiveServer
 
@@ -43,6 +44,7 @@
                             <th>Message</th>
                             <th>Date</th>
                             <th>Status</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -51,7 +53,14 @@
                             <tr style="@(inquiry.Status == InquiryStatus.Unseen ? "font-weight: 600;" : "opacity: 0.85;")">
                                 <td style="width: 220px;">
                                     <div class="fw-bold">@inquiry.Name</div>
-                                    <div class="text-muted small">@inquiry.Email</div>
+                                    @if (!string.IsNullOrEmpty(inquiry.Email) && !inquiry.Email.EndsWith("@no-email.local"))
+                                    {
+                                        <div class="text-muted small">@inquiry.Email</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(inquiry.Phone))
+                                    {
+                                        <div class="text-muted small mt-1"><i class="bi bi-telephone ms-1 me-1"></i> @inquiry.Phone</div>
+                                    }
                                 </td>
                                 <td>
                                     <div class="text-truncate" style="max-width: 380px;" title="@inquiry.Message">@inquiry.Message</div>
@@ -71,6 +80,11 @@
                                         <option value="4">DISPATCHED</option>
                                         <option value="5">COMPLETED</option>
                                     </select>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-link text-danger p-0" title="Delete Lead" @onclick="() => DeleteLead(inquiry.Id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -155,6 +169,16 @@
         if (Enum.TryParse<InquiryStatus>(e.Value?.ToString(), out var newStatus))
         {
             await InquiryService.UpdateStatusAsync(id, newStatus);
+            await LoadInquiries();
+        }
+    }
+
+    private async Task DeleteLead(int id)
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this lead? This cannot be undone.");
+        if (confirm)
+        {
+            await InquiryService.DeleteInquiryAsync(id);
             await LoadInquiries();
         }
     }

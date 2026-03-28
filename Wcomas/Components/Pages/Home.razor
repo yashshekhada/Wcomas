@@ -2,10 +2,51 @@
 @using Wcomas.Models
 @using Wcomas.Services
 @inject InquiryService InquiryService
+@inject BrandService BrandService
+@inject CategoryService CategoryService
+@inject ProductService ProductService
 @rendermode InteractiveServer
 
-<PageTitle>Wcomas | Elite PVC Solutions for Business & Home</PageTitle>
+<PageTitle>Wcomas | Premium B2B Architectural Components & Panels</PageTitle>
 
+<HeadContent>
+    <meta name="description" content="WCOMAS revolutionizes architectural spaces with premium PVC fluted panels, luxury louvers, and bespoke interior finishes. Get a B2B quote today for wholesale pricing and nationwide delivery." />
+    <meta property="og:title" content="WCOMAS - Premium B2B Architectural Panels & Louvers" />
+    <meta property="og:description" content="Explore our elite collection of architectural components tailored for business, retail, and luxury homes." />
+    <meta property="og:url" content="https://wcomas.com" />
+    <meta property="og:type" content="website" />
+    
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@graph": [
+        {
+          "@@type": "Organization",
+          "name": "WCOMAS",
+          "url": "https://wcomas.com",
+          "logo": "https://wcomas.com/assets/logo.png",
+          "contactPoint": {
+            "@@type": "ContactPoint",
+            "telephone": "+91-98765-00000",
+            "contactType": "customer service",
+            "areaServed": "IN",
+            "availableLanguage": ["en", "hi"]
+          }
+        },
+        {
+          "@@type": "WebSite",
+          "url": "https://wcomas.com",
+          "name": "Wcomas Premium Boards",
+          "potentialAction": {
+            "@@type": "SearchAction",
+            "target": "https://wcomas.com/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
+</HeadContent>
 <div class="hero-section">
     <img src="images/hero.png" class="hero-video-bg" alt="Luxury Interior" />
     <div class="hero-gradient-overlay"></div>
@@ -24,7 +65,182 @@
     </div>
 </div>
 
-<section id="engineering" class="reveal">
+<!-- Brand Scroller Right After Hero -->
+<div id="brands-showcase" class="py-2 bg-white border-bottom reveal w-100">
+    <div class="brand-marquee">
+        <div class="brand-track" style="animation-duration: @(brands != null && brands.Any() ? (brands.Count * 10 * 3) : 30)s;">
+            @if (brands != null)
+            {
+                @for (int i = 0; i < 20; i++)
+                {
+                    @foreach (var b in brands)
+                    {
+                        <div class="brand-slide">
+                            @if (!string.IsNullOrEmpty(b.LogoUrl))
+                            {
+                                <img src="@b.LogoUrl" alt="@b.Name" title="@b.Name" />
+                            }
+                            else
+                            {
+                                <span class="brand-text">@b.Name</span>
+                            }
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<section id="collections" class="reveal" style="background: rgba(255,255,255,0.01); padding: 5rem 0;">
+    <div class="text-center mb-5">
+        <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Curated Collections</h2>
+        <p style="font-size: 1.2rem; color: var(--text-muted); letter-spacing: 2px;">TRANSFORMING INTERIORS INTO ART</p>
+    </div>
+
+    <div class="product-grid mt-5">
+        @if (categories != null && categories.Any())
+        {
+            @foreach (var c in categories)
+            {
+                <a href="/category/@c.Id" class="product-card text-decoration-none">
+                    <img src="@(string.IsNullOrEmpty(c.ImageUrl) ? "images/hero.png" : c.ImageUrl)" alt="@c.Name">
+                    <div class="product-info">
+                        <h4 style="font-size: 1.8rem; color: var(--primary);">@c.Name</h4>
+                        <p style="color: var(--text-main); opacity: 0.8;">@(string.IsNullOrEmpty(c.Description) ? "Explore our premium collection." : (c.Description.Length > 80 ? c.Description.Substring(0, 80) + "..." : c.Description))</p>
+                    </div>
+                </a>
+            }
+        }
+        else
+        {
+            <div class="w-100 text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        }
+    </div>
+</section>
+
+<section id="category-sliders" class="category-slider-section reveal">
+    @if (categories != null && products != null)
+    {
+        @foreach (var category in categories)
+        {
+            var categoryProducts = products.Where(p => p.CategoryId == category.Id).ToList();
+            @if (categoryProducts.Any())
+            {
+                <div class="container-fluid px-lg-10 mb-20 rounded-5 py-4" style="background: rgba(255,252,245,0.4);">
+                    <div class="slider-title-area">
+                        <div>
+                            <span style="color: var(--primary); font-weight: 800; letter-spacing: 3px; display: block; margin-bottom: 0.5rem; font-size: 0.8rem; text-transform: uppercase;">Exclusive Collection</span>
+                            <h2 style="font-size: clamp(1.5rem, 5vw, 2.5rem); color: var(--text-main); margin: 0; font-weight: 800; letter-spacing: -1px;">@category.Name</h2>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <a href="/category/@category.Id" class="text-link">VIEW ALL <i class="bi bi-arrow-right-short fs-4"></i></a>
+                        </div>
+                    </div>
+                    
+                    <div class="category-slider-container" id="slider-@category.Id">
+                        <div class="category-slider-track">
+                            @* Use only triple-concat for seamless manual + auto scroll *@
+                            @foreach (var p in categoryProducts.Concat(categoryProducts).Concat(categoryProducts))
+                            {
+                                <div class="category-slider-item">
+                                    <ProductCard Product="p" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+</section>
+
+
+<section id="testimonials" class="reveal" style="padding: 5rem 0;">
+    <div class="text-center mb-5">
+        <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Industry Feedback</h2>
+        <p style="font-size: 1.2rem; color: var(--text-muted); letter-spacing: 2px;">TRUSTED BY THE WORLD'S BEST ARCHITECTS</p>
+    </div>
+    
+    <div class="row g-5">
+        <div class="col-md-6">
+            <div class="glass-panel testimonial-card">
+                <p class="testimonial-quote">"Wcomas panels have completely changed our approach to commercial office design. The speed of installation is a game-changer."</p>
+                <div class="testimonial-author">
+                    <div class="author-img">JD</div>
+                    <div>
+                        <h5 style="margin: 0; color: var(--primary);">Julian Dash</h5>
+                        <small style="color: var(--text-muted);">Lead Architect, Dash & Partners</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="glass-panel testimonial-card">
+                <p class="testimonial-quote">"The texture depth is incredible. You can't tell it's PVC until you touch it—it feels and looks like premium stone."</p>
+                <div class="testimonial-author">
+                    <div class="author-img">SR</div>
+                    <div>
+                        <h5 style="margin: 0; color: var(--primary);">Sarah Reed</h5>
+                        <small style="color: var(--text-muted);">Interior Designer, Luxe Spaces</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="reveal">
+    <div class="glass-panel" style="overflow: hidden; padding: 0;">
+        <div class="row g-0">
+            <div class="col-lg-6 p-4 p-lg-5" style="padding: 3rem !important;">
+                <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Inquire</h2>
+                <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 4rem;">Let's discuss your next landmark project.</p>
+                
+                @if (submitted)
+                {
+                    <div class="reveal" style="text-align: center; padding: 3rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;">Thank You</h3>
+                        <p style="color: var(--text-muted);">Your inquiry has been received. Our team will contact you shortly.</p>
+                        <button type="button" class="btn-premium mt-4" @onclick="() => submitted = false">Submit Another</button>
+                    </div>
+                }
+                else
+                {
+                    <form @onsubmit="SubmitInquiry">
+                        <div class="mb-5">
+                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">FULL NAME</label>
+                            <input type="text" class="form-input" placeholder="Winston Churchill" @bind="newInquiry.Name" required>
+                        </div>
+                        <div class="mb-5">
+                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">MOBILE NUMBER</label>
+                            <input type="tel" class="form-input" placeholder="+91 98765 43210" @bind="newInquiry.Phone" required>
+                        </div>
+                        <div class="mb-5">
+                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">PROJECT SUMMARY</label>
+                            <textarea class="form-input" rows="5" placeholder="Tell us about your requirements..." @bind="newInquiry.Message" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-premium px-5 py-3" disabled="@isSubmitting">
+                            @(isSubmitting ? "Submitting..." : "Submit Inquiry")
+                        </button>
+                    </form>
+                }
+            </div>
+            <div class="col-lg-6 d-none d-lg-block" style="background: url('images/hero.png'); background-size: cover; background-position: left; position: relative;">
+                <div style="position: absolute; inset: 0; background: linear-gradient(to right, var(--bg-dark), transparent);"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section id="engineering" class="reveal" style="padding: 5rem 0;">
     <div class="text-center mb-5">
         <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Proven Engineering</h2>
         <p style="font-size: 1.2rem; color: var(--text-muted); letter-spacing: 2px;">ARCHITECTURAL GRADE DURABILITY</p>
@@ -33,7 +249,7 @@
     
     <div class="row g-5 mt-4">
         <div class="col-lg-4 col-md-6">
-            <div class="glass-panel h-100" style="padding: 5rem 3rem; text-align: center;">
+            <div class="glass-panel h-100" style="padding: 3rem 2rem; text-align: center;">
                 <div class="feature-icon-wrapper">
                     <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
@@ -74,7 +290,8 @@
     </div>
 </section>
 
-<section id="process" class="reveal">
+
+<section id="process" class="reveal" style="padding: 5rem 0;">
     <div class="row align-items-center g-5">
         <div class="col-lg-6">
             <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 2rem;">Our Design Journey</h2>
@@ -108,164 +325,7 @@
     </div>
 </section>
 
-<section id="louver-spotlight" class="reveal" style="padding-top: 5rem;">
-    <div class="glass-panel" style="padding: 0; border-radius: 40px; overflow: hidden;">
-        <div class="row g-0 align-items-center">
-            <div class="col-lg-7">
-                <div style="position: relative; height: 600px; overflow: hidden;">
-                    <img src="images/louvers.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Premium Charcoal Louvers">
-                    <div style="position: absolute; inset: 0; background: linear-gradient(to right, rgba(252, 251, 247, 0.4), transparent);"></div>
-                </div>
-            </div>
-            <div class="col-lg-5 p-5 p-lg-10" style="padding: 5rem !important;">
-                <span style="color: var(--primary); font-weight: 800; letter-spacing: 4px; display: block; margin-bottom: 2rem; font-size: 0.9rem;">NEW ARRIVAL</span>
-                <h2 style="font-size: 3rem; color: var(--text-main); margin-bottom: 2rem;">Elite Louver Series</h2>
-                <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 3rem; line-height: 1.8;">
-                    Our charcoal louver panels define the modern architectural silhouette. Precision-cut slats create a rhythmic interplay of light and shadow, perfect for feature walls and external cladding.
-                </p>
-                <div class="spec-badges" style="justify-content: flex-start;">
-                    <span class="spec-badge">Matte Finish</span>
-                    <span class="spec-badge">Acoustic Logic</span>
-                    <span class="spec-badge">UV Stable</span>
-                </div>
-                <div class="mt-5">
-                    <a href="#contact" class="btn-premium">Request Sample</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="collections" class="reveal" style="background: rgba(255,255,255,0.01);">
-    <div class="text-center mb-5">
-        <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Curated Collections</h2>
-        <p style="font-size: 1.2rem; color: var(--text-muted); letter-spacing: 2px;">TRANSFORMING INTERIORS INTO ART</p>
-    </div>
-
-    <div class="product-grid mt-5">
-        <div class="product-card">
-            <img src="images/hero.png" alt="Wall Panels">
-            <div class="product-info">
-                <h4 style="font-size: 1.8rem; color: var(--primary);">Signature Series</h4>
-                <p style="color: var(--text-main); opacity: 0.8;">Premium wall cladding for high-end corporate & residential projects.</p>
-            </div>
-        </div>
-        <div class="product-card">
-            <img src="images/walnut.png" alt="Walnut Panels">
-            <div class="product-info">
-                <h4 style="font-size: 1.8rem; color: var(--primary);">Organic Textures</h4>
-                <p style="color: var(--text-main); opacity: 0.8;">Authentic wood grains with the durability of reinforced PVC.</p>
-            </div>
-        </div>
-        <div class="product-card">
-            <img src="images/marble.png" alt="Marble Panels">
-            <div class="product-info">
-                <h4 style="font-size: 1.8rem; color: var(--primary);">Eternal Stone</h4>
-                <p style="color: var(--text-main); opacity: 0.8;">The majesty of Carrara marble in a lightweight, durable format.</p>
-            </div>
-        </div>
-        <div class="product-card">
-            <img src="images/concrete.png" alt="Concrete Panels">
-            <div class="product-info">
-                <h4 style="font-size: 1.8rem; color: var(--primary);">Industrial Raw</h4>
-                <p style="color: var(--text-main); opacity: 0.8;">Modern concrete finishes for urban and minimalist spaces.</p>
-            </div>
-        </div>
-        <div class="product-card" data-type="louver">
-            <img src="images/louvers.png" alt="Louver Panels">
-            <div class="product-info">
-                <h4 style="font-size: 1.8rem; color: var(--primary);">Elite Louvers</h4>
-                <p style="color: var(--text-main); opacity: 0.8;">Sophisticated vertical slats for architectural depth and modern shadow play.</p>
-            </div>
-        </div>
-        <div class="product-card">
-            <img src="images/cabinet.png" alt="Cabinet Panels">
-            <div class="product-info">
-                <h4 style="font-size: 1.8rem; color: var(--primary);">Bespoke Surfaces</h4>
-                <p style="color: var(--text-main); opacity: 0.8;">Custom furniture finishes that redefine modern cabinetry.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="testimonials" class="reveal">
-    <div class="text-center mb-5">
-        <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Industry Feedback</h2>
-        <p style="font-size: 1.2rem; color: var(--text-muted); letter-spacing: 2px;">TRUSTED BY THE WORLD'S BEST ARCHITECTS</p>
-    </div>
-    
-    <div class="row g-5">
-        <div class="col-md-6">
-            <div class="glass-panel testimonial-card">
-                <p class="testimonial-quote">"Wcomas panels have completely changed our approach to commercial office design. The speed of installation is a game-changer."</p>
-                <div class="testimonial-author">
-                    <div class="author-img">JD</div>
-                    <div>
-                        <h5 style="margin: 0; color: var(--primary);">Julian Dash</h5>
-                        <small style="color: var(--text-muted);">Lead Architect, Dash & Partners</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="glass-panel testimonial-card">
-                <p class="testimonial-quote">"The texture depth is incredible. You can't tell it's PVC until you touch it—it feels and looks like premium stone."</p>
-                <div class="testimonial-author">
-                    <div class="author-img">SR</div>
-                    <div>
-                        <h5 style="margin: 0; color: var(--primary);">Sarah Reed</h5>
-                        <small style="color: var(--text-muted);">Interior Designer, Luxe Spaces</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="contact" class="reveal">
-    <div class="glass-panel" style="overflow: hidden; padding: 0;">
-        <div class="row g-0">
-            <div class="col-lg-6 p-5 p-lg-10" style="padding: 5rem !important;">
-                <h2 style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;">Inquire</h2>
-                <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 4rem;">Let's discuss your next landmark project.</p>
-                
-                @if (submitted)
-                {
-                    <div class="reveal" style="text-align: center; padding: 3rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 1rem;">Thank You</h3>
-                        <p style="color: var(--text-muted);">Your inquiry has been received. Our team will contact you shortly.</p>
-                        <button type="button" class="btn-premium mt-4" @onclick="() => submitted = false">Submit Another</button>
-                    </div>
-                }
-                else
-                {
-                    <form @onsubmit="SubmitInquiry">
-                        <div class="mb-5">
-                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">FULL NAME</label>
-                            <input type="text" class="form-input" placeholder="Winston Churchill" @bind="newInquiry.Name" required>
-                        </div>
-                        <div class="mb-5">
-                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">EMAIL ADDRESS</label>
-                            <input type="email" class="form-input" placeholder="office@company.com" @bind="newInquiry.Email" required>
-                        </div>
-                        <div class="mb-5">
-                            <label style="color: var(--primary); font-weight: 600; margin-bottom: 1rem; display: block; letter-spacing: 1px;">PROJECT SUMMARY</label>
-                            <textarea class="form-input" rows="5" placeholder="Tell us about your requirements..." @bind="newInquiry.Message" required></textarea>
-                        </div>
-                        <button type="submit" class="btn-premium px-5 py-3" disabled="@isSubmitting">
-                            @(isSubmitting ? "Submitting..." : "Submit Inquiry")
-                        </button>
-                    </form>
-                }
-            </div>
-            <div class="col-lg-6 d-none d-lg-block" style="background: url('images/hero.png'); background-size: cover; background-position: left; position: relative;">
-                <div style="position: absolute; inset: 0; background: linear-gradient(to right, var(--bg-dark), transparent);"></div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<footer style="padding: 8rem 4rem 4rem; border-top: 1px solid var(--glass-border);">
+<footer style="padding: 4rem 2rem 2rem; border-top: 1px solid var(--glass-border);">
     <div class="footer-grid mb-5">
         <div>
             <h2 style="color: var(--primary); margin-bottom: 2rem;">WCOMAS</h2>
@@ -274,17 +334,15 @@
         <div>
             <h5 style="color: var(--primary); margin-bottom: 2rem; letter-spacing: 2px;">NAVIGATION</h5>
             <ul style="list-style: none; padding: 0;">
-                <li class="mb-3"><a href="#" style="color: var(--text-muted); text-decoration: none;">Engineering</a></li>
-                <li class="mb-3"><a href="#" style="color: var(--text-muted); text-decoration: none;">Process</a></li>
-                <li class="mb-3"><a href="#" style="color: var(--text-muted); text-decoration: none;">Collections</a></li>
                 <li class="mb-3"><a href="#" style="color: var(--text-muted); text-decoration: none;">Contact</a></li>
             </ul>
         </div>
         <div>
             <h5 style="color: var(--primary); margin-bottom: 2rem; letter-spacing: 2px;">CONTACT</h5>
-            <p style="color: var(--text-muted); margin-bottom: 1rem;">102 Elite Avenue, Design District</p>
-            <p style="color: var(--text-muted); margin-bottom: 1rem;">London, UK</p>
-            <p style="color: var(--text-muted);">office@wcomas.com</p>
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.4;">9, near kaneria oil mill, Gokuldham Society</p>
+            <p style="color: var(--text-muted); margin-bottom: 1rem; line-height: 1.4;">opp, Samrat Industrial Area, Rajkot, Gujarat 360004</p>
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem;"><i class="bi bi-envelope me-2"></i> office@wcomas.com</p>
+            <p style="color: var(--text-muted);"><i class="bi bi-telephone me-2"></i> +91 77779 16487</p>
         </div>
         <div>
             <h5 style="color: var(--primary); margin-bottom: 2rem; letter-spacing: 2px;">SOCIAL</h5>
@@ -300,16 +358,181 @@
     </div>
 </footer>
 
+<style>
+    .brand-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+        border: 1px solid rgba(0,0,0,0.03);
+    }
+    .brand-card img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        filter: grayscale(1) opacity(0.6);
+        transition: var(--transition);
+    }
+    .brand-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--primary);
+    }
+    .brand-card:hover img {
+        filter: grayscale(0) opacity(1);
+        transform: scale(1.05);
+    }
+    .brand-hover-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--primary);
+        color: white;
+        padding: 0.8rem;
+        text-align: center;
+        transform: translateY(100%);
+        transition: var(--transition);
+    }
+    .brand-card:hover .brand-hover-info {
+        transform: translateY(0);
+    }
+    .brand-hover-info h5 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+    .brand-marquee {
+        overflow: hidden;
+        padding: 10px 0;
+        white-space: nowrap;
+        position: relative;
+    }
+    .brand-track {
+        display: inline-flex;
+        animation: scroll 30s linear infinite;
+    }
+    .hero-section {
+        position: relative;
+        height: 70vh;
+        min-height: 600px;
+        width: 100%;
+        padding-top: 90px; /* Match navbar height */
+        display: flex;
+        background: #fdfcf9;
+    }
+    .brand-slide {
+
+        width: 200px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 30px;
+    }
+    .brand-slide img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        filter: grayscale(1) opacity(0.5);
+        transition: 0.3s;
+    }
+    .brand-slide:hover img {
+        filter: grayscale(0) opacity(1);
+    }
+    .brand-text {
+        font-weight: 800;
+        color: var(--primary);
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+    }
+    @@keyframes scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    .category-slider-section {
+        padding: 4rem 0;
+        background: transparent;
+    }
+    .category-slider-container {
+        display: flex;
+        overflow-x: auto; /* Enable native swiping */
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0.5rem 0;
+        position: relative;
+        cursor: grab;
+    }
+    .category-slider-container::-webkit-scrollbar {
+        display: none;
+    }
+    .category-slider-container:active {
+        cursor: grabbing;
+    }
+    .category-slider-track {
+        display: flex;
+        gap: 1.25rem; /* Tighter gap */
+        width: max-content;
+        will-change: scroll-position;
+    }
+    .category-slider-item {
+        flex: 0 0 280px; /* Tighter item width */
+        transition: transform 0.3s ease;
+    }
+    
+    .mb-20 { margin-bottom: 4rem; }
+    .slider-title-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(184, 144, 80, 0.1);
+        padding-bottom: 1.5rem;
+    }
+
+    @@media (max-width: 991px) {
+        .category-slider-item {
+            flex: 0 0 300px;
+        }
+        .mb-20 { margin-bottom: 2rem; }
+    }
+</style>
+
 @code {
     private Inquiry newInquiry = new();
+    private List<Brand>? brands;
+    private List<Category>? categories;
+    private List<Product>? products;
+    private Product? latestProduct;
+    
     private bool isSubmitting = false;
     private bool submitted = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        brands = await BrandService.GetAllBrandsAsync();
+        categories = await CategoryService.GetAllCategoriesAsync();
+        products = await ProductService.GetAllProductsAsync();
+        latestProduct = products?.OrderByDescending(x => x.CreatedAt).FirstOrDefault();
+    }
 
     private async Task SubmitInquiry()
     {
         isSubmitting = true;
         try
         {
+            if (string.IsNullOrWhiteSpace(newInquiry.Email))
+            {
+                newInquiry.Email = $"{newInquiry.Phone}@no-email.local";
+            }
             await InquiryService.SaveInquiryAsync(newInquiry);
             newInquiry = new();
             submitted = true;
@@ -319,4 +542,48 @@
             isSubmitting = false;
         }
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // JS handles the auto-scroll via the script tag below
+        }
+    }
 }
+
+<script>
+    (function() {
+        function initAutoScroll() {
+            const sliders = document.querySelectorAll('.category-slider-container');
+            sliders.forEach(slider => {
+                let isPaused = false;
+                let scrollSpeed = 1.2; // Pixels per frame (~60-70px/sec) - "bit fast" as requested
+                
+                slider.addEventListener('mouseenter', () => isPaused = true);
+                slider.addEventListener('mouseleave', () => isPaused = false);
+                slider.addEventListener('touchstart', () => isPaused = true);
+                slider.addEventListener('touchend', () => isPaused = false);
+                
+                function step() {
+                    if (!isPaused) {
+                        slider.scrollLeft += scrollSpeed;
+                        // Reset when we've scrolled exactly one set (1/3 of total width)
+                        if (slider.scrollLeft >= slider.scrollWidth / 3) {
+                            slider.scrollLeft = 0;
+                        }
+                    }
+                    requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            });
+        }
+        
+        // Wait for page to be fully interactive
+        if (document.readyState === 'complete') {
+            initAutoScroll();
+        } else {
+            window.addEventListener('load', initAutoScroll);
+        }
+    })();
+</script>

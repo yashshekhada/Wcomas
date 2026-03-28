@@ -14,26 +14,26 @@ public class WcomasDbContext : DbContext
     public DbSet<Brand> Brands { get; set; } = null!;
     public DbSet<Inquiry> Inquiries { get; set; } = null!;
     public DbSet<Product> Products { get; set; } = null!;
-    public DbSet<ProductVariant> ProductVariants { get; set; } = null!;
     public DbSet<Pattern> Patterns { get; set; } = null!;
-    public DbSet<VariantImage> VariantImages { get; set; } = null!;
+    public DbSet<ProductImage> ProductImages { get; set; } = null!;
+    public DbSet<VisitorLog> VisitorLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // ProductVariant → Pattern (optional FK)
-        modelBuilder.Entity<ProductVariant>()
-            .HasOne(v => v.Pattern)
+        // Product → Pattern (optional FK)
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.Pattern)
             .WithMany()
-            .HasForeignKey(v => v.PatternId)
+            .HasForeignKey(p => p.PatternId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // ProductVariant → VariantImages
-        modelBuilder.Entity<VariantImage>()
-            .HasOne(vi => vi.Variant)
-            .WithMany(v => v.Images)
-            .HasForeignKey(vi => vi.VariantId)
+        // Product → ProductImages
+        modelBuilder.Entity<ProductImage>()
+            .HasOne(pi => pi.Product)
+            .WithMany(p => p.Images)
+            .HasForeignKey(pi => pi.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

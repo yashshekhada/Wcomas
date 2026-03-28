@@ -64,4 +64,15 @@ public class InquiryService
             await context.SaveChangesAsync();
         }
     }
+
+    public async Task DeleteInquiryAsync(int id)
+    {
+        using var context = await _dbFactory.CreateDbContextAsync();
+        var inquiry = await context.Inquiries.FindAsync(id);
+        if (inquiry != null)
+        {
+            context.Inquiries.Remove(inquiry);
+            await context.SaveChangesAsync();
+        }
+    }
 }

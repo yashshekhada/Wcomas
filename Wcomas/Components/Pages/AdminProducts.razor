@@ -40,7 +40,7 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label text-muted small fw-bold text-uppercase">Product Name *</label>
-                            <input @bind="editingProduct.Name" class="form-control form-glass" placeholder="e.g. Premium Acoustic Panel" />
+                            <input @bind="editingProduct.Name" class="form-control form-glass" placeholder="e.g. Charcoal Luver Panal" />
                         </div>
                         <div class="col-md-3">
                             <label class="form-label text-muted small fw-bold text-uppercase">Category *</label>
@@ -67,15 +67,19 @@
                     </div>
 
                     <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label text-muted small fw-bold text-uppercase">Base Price</label>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Price</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent">₹</span>
-                                <input type="number" @bind="editingProduct.BasePrice" class="form-control form-glass" />
+                                <input type="number" @bind="editingProduct.Price" class="form-control form-glass" />
                             </div>
                         </div>
-                        <div class="col-md-8">
-                            <label class="form-label text-muted small fw-bold text-uppercase">Product Main Image</label>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Code / SKU</label>
+                            <input @bind="editingProduct.Code" class="form-control form-glass" placeholder="WC-001" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Main Image</label>
                             <div class="file-picker-wrap">
                                 <InputFile OnChange="HandleMainImageSelect" class="form-control form-glass" accept="image/*" />
                             </div>
@@ -92,151 +96,109 @@
                         </div>
                     </div>
 
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Pattern</label>
+                            <select @bind="editingProduct.PatternId" class="form-select form-glass">
+                                <option value="">-- No Pattern --</option>
+                                @if (patterns != null) {
+                                    @foreach (var p in patterns) {
+                                        <option value="@p.Id">@p.Title</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Colors</label>
+                            <div class="d-flex align-items-center gap-2 flex-wrap p-2 border rounded" style="background: rgba(255,255,255,0.5);">
+                                @{
+                                    var colorList = GetColorList(editingProduct.Colors);
+                                }
+                                @for (int ci = 0; ci < colorList.Count; ci++)
+                                {
+                                    var cIdx = ci;
+                                    <div class="color-swatch-wrap position-relative">
+                                        <input type="color" value="@colorList[cIdx]"
+                                               @onchange="(e) => UpdateColor(cIdx, e.Value?.ToString())"
+                                               style="width:40px; height:40px; border-radius:50%; border:2px solid rgba(0,0,0,0.1); cursor:pointer; padding:2px;" />
+                                        <button type="button" class="btn-close-swatch" @onclick="() => RemoveColor(cIdx)">×</button>
+                                    </div>
+                                }
+                                <button type="button" class="btn btn-light btn-sm" style="border-radius:50%; width:40px; height:40px;"
+                                        @onclick="AddColor">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold text-uppercase">YouTube Link</label>
+                            <input @bind="editingProduct.YoutubeLink" class="form-control form-glass" placeholder="https://youtube.com/watch?v=..." />
+                            @if (!string.IsNullOrEmpty(editingProduct.YoutubeLink))
+                            {
+                                <div class="mt-2 ratio ratio-16x9" style="border-radius:12px; overflow:hidden; max-width:100%;">
+                                    <iframe src="@GetYoutubeEmbedUrl(editingProduct.YoutubeLink)" allowfullscreen></iframe>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold text-uppercase">3D Model File (.glb/.gltf)</label>
+                            <div class="file-picker-wrap">
+                                <InputFile OnChange="HandleModelSelect" class="form-control form-glass" accept=".glb,.gltf" />
+                            </div>
+                            @if (!string.IsNullOrEmpty(editingProduct.ModelUrl))
+                            {
+                                <div class="mt-2 p-2 bg-light rounded d-flex align-items-center justify-content-between gap-2" style="border-radius:12px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-box fs-4 text-primary"></i>
+                                        <small class="text-truncate">@editingProduct.ModelUrl.Split('/').Last()</small>
+                                    </div>
+                                    <button type="button" class="btn btn-link text-danger p-0" @onclick="() => editingProduct.ModelUrl = null">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
                     <!-- DESCRIPTION - Quill Editor -->
                     <div class="mb-4">
                         <label class="form-label text-muted small fw-bold text-uppercase">Description</label>
-                        <div id="quill-editor" style="min-height: 150px; background: white; border-radius: 12px; border: 1px solid rgba(0,0,0,0.08);"></div>
+                        <div id="quill-editor" style="min-height: 200px; background: white; border-radius: 12px; border: 1px solid rgba(0,0,0,0.08);"></div>
                     </div>
 
-                    <hr class="my-4">
-
-                    <!-- VARIANTS SECTION -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-700 m-0">Product Variants</h6>
-                        <button type="button" class="btn btn-outline-primary btn-sm" style="border-radius:20px;" @onclick="AddVariant">
-                            <i class="bi bi-plus-lg me-1"></i> Add Variant
-                        </button>
-                    </div>
-
-                    @for (int vi = 0; vi < draftVariants.Count; vi++)
-                    {
-                        var v = draftVariants[vi];
-                        var idx = vi;
-                        <div class="variant-card mb-3 p-4" style="background:#f9f9f9; border-radius:16px; border:1px solid rgba(0,0,0,0.06);">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="fw-bold" style="color:var(--primary);">Variant @(idx + 1)</span>
-                                <button type="button" class="btn btn-link text-danger p-0" @onclick="() => RemoveVariant(idx)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-
-                            <!-- Row 1: Code, Name, Extra Price -->
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-3">
-                                    <label class="form-label text-muted small fw-bold text-uppercase">Code / SKU</label>
-                                    <input @bind="v.SKU" class="form-control form-glass-sm" placeholder="WC-001" />
-                                </div>
-                                <div class="col-md-5">
-                                    <label class="form-label text-muted small fw-bold text-uppercase">Variant Name *</label>
-                                    <input @bind="v.Name" class="form-control form-glass-sm" placeholder="e.g. Charcoal Matt" />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label text-muted small fw-bold text-uppercase">Extra Price (₹)</label>
-                                    <input type="number" @bind="v.PriceAdjustment" class="form-control form-glass-sm" placeholder="0" />
-                                </div>
-                            </div>
-
-                            <!-- Row 2: Pattern & Colors -->
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-5">
-                                    <label class="form-label text-muted small fw-bold text-uppercase">Pattern</label>
-                                    <select @bind="v.PatternId" class="form-select form-glass-sm">
-                                        <option value="">-- No Pattern --</option>
-                                        @if (patterns != null) {
-                                            @foreach (var p in patterns) {
-                                                <option value="@p.Id">@p.Title</option>
-                                            }
-                                        }
-                                    </select>
-                                </div>
-                                <div class="col-md-7">
-                                    <label class="form-label text-muted small fw-bold text-uppercase">Colors</label>
-                                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        @{
-                                            var colorList = GetColorList(v.Colors);
-                                        }
-                                        @for (int ci = 0; ci < colorList.Count; ci++)
-                                        {
-                                            var cIdx = ci;
-                                            <div class="color-swatch-wrap position-relative">
-                                                <input type="color" value="@colorList[cIdx]"
-                                                       @onchange="(e) => UpdateColor(v, cIdx, e.Value?.ToString())"
-                                                       style="width:40px; height:40px; border-radius:50%; border:2px solid rgba(0,0,0,0.1); cursor:pointer; padding:2px;" />
-                                                <button type="button" class="btn-close-swatch" @onclick="() => RemoveColor(v, cIdx)">×</button>
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-light btn-sm" style="border-radius:50%; width:40px; height:40px;"
-                                                @onclick="() => AddColor(v)">
-                                            <i class="bi bi-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Row 3: YouTube & 3D Model -->
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label text-muted small fw-bold text-uppercase">YouTube Link</label>
-                                    <input @bind="v.YouTubeLink" class="form-control form-glass-sm" placeholder="https://youtube.com/watch?v=..." />
-                                    @if (!string.IsNullOrEmpty(v.YouTubeLink))
-                                    {
-                                        <div class="mt-2 ratio ratio-16x9" style="border-radius:8px; overflow:hidden; max-width:300px;">
-                                            <iframe src="@GetYoutubeEmbedUrl(v.YouTubeLink)" allowfullscreen></iframe>
-                                        </div>
-                                    }
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label text-muted small fw-bold text-uppercase">3D Model File (.glb/.gltf)</label>
-                                    <div class="file-picker-wrap">
-                                        <InputFile OnChange="(e) => HandleModelSelect(e, v)" class="form-control form-glass-sm" accept=".glb,.gltf" />
-                                    </div>
-                                    @if (!string.IsNullOrEmpty(v.ModelUrl))
-                                    {
-                                        <div class="mt-2 p-2 bg-light rounded d-flex align-items-center justify-content-between gap-2" style="border-radius:8px;">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <i class="bi bi-box fs-4 text-primary"></i>
-                                                <small class="text-truncate" style="max-width:200px;">@v.ModelUrl.Split('/').Last()</small>
-                                            </div>
-                                            <button type="button" class="btn btn-link text-danger p-0" @onclick="() => v.ModelUrl = null">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-
-                            <!-- Row 4: Images -->
-                            <div class="mb-0">
-                                <label class="form-label text-muted small fw-bold text-uppercase">Variant Images</label>
-                                <div class="file-picker-wrap mb-3">
-                                    <InputFile OnChange="(e) => HandleImageSelect(e, v)" class="form-control form-glass-sm" multiple accept="image/*" />
-                                </div>
-                                <div class="d-flex flex-wrap gap-2 align-items-center">
-                                    @{
-                                        var imgList = GetImageList(v);
-                                    }
-                                    @for (int ii = 0; ii < imgList.Count; ii++)
-                                    {
-                                        var iIdx = ii;
-                                        var imgUrl = imgList[iIdx];
-                                        <div class="variant-img-thumb position-relative">
-                                            @if (!string.IsNullOrEmpty(imgUrl))
-                                            {
-                                                <img src="@imgUrl" alt="img" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #eee;" />
-                                            }
-                                            <button type="button" class="btn-close-swatch" @onclick="() => RemoveImage(v, iIdx)">×</button>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
+                    <!-- ADDITIONAL IMAGES -->
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Product Gallery Images</label>
+                        <div class="file-picker-wrap mb-3">
+                            <InputFile OnChange="HandleAdditionalImagesSelect" class="form-control form-glass" multiple accept="image/*" />
                         </div>
-                    }
+                        <div class="d-flex flex-wrap gap-3 align-items-center">
+                            @foreach (var imgUrl in draftGalleryImages)
+                            {
+                                <div class="variant-img-thumb position-relative shadow-sm" style="width:80px; height:80px; border-radius:12px; overflow:visible;">
+                                    <img src="@imgUrl" style="width:100%; height:100%; object-fit:cover; border-radius:12px;" />
+                                    <button type="button" class="btn-close-swatch" @onclick="() => RemoveGalleryImage(imgUrl)">×</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
 
-                    <div class="d-flex gap-2 mt-4">
-                        <button class="btn-premium w-100 py-3" @onclick="SaveProduct">
-                            @(editingProduct.Id == 0 ? "CREATE PRODUCT" : "UPDATE PRODUCT")
+                    <div class="d-flex gap-3 mt-5">
+                        <button class="btn-premium w-100 py-3 fw-bold" @onclick="SaveProduct" disabled="@isSaving" style="font-size: 1.1rem; letter-spacing: 1px;">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>SAVING...</span>
+                            }
+                            else
+                            {
+                                @(editingProduct.Id == 0 ? "CREATE PRODUCT" : "UPDATE PRODUCT")
+                            }
                         </button>
-                        <button class="btn btn-outline-secondary py-3" style="border-radius:30px;min-width:120px;font-size:0.8rem;" @onclick="CancelEdit">CANCEL</button>
+                        <button class="btn btn-outline-secondary py-3 px-5 fw-bold text-uppercase" style="border-radius:30px;" @onclick="CancelEdit" disabled="@isSaving">CANCEL</button>
                     </div>
                 </div>
             </div>
@@ -257,7 +219,9 @@
 
             @if (products == null)
             {
-                <p class="text-muted">Loading...</p>
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
             }
             else if (!products.Any())
             {
@@ -273,8 +237,9 @@
                             <tr class="text-muted small text-uppercase">
                                 <th>Item</th>
                                 <th>Category / Brand</th>
+                                <th>Pattern</th>
                                 <th>Price</th>
-                                <th>Variants</th>
+                                <th>Code</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
@@ -303,21 +268,20 @@
                                             <span class="badge bg-dark-soft">@p.Brand.Name</span>
                                         }
                                     </td>
-                                    <td class="fw-bold">₹@p.BasePrice</td>
                                     <td>
-                                        @foreach (var v in p.Variants)
-                                        {
-                                            <div class="d-flex align-items-center gap-1 mb-1">
-                                                <!-- Color dots -->
-                                                @foreach (var c in GetColorList(v.Colors))
-                                                {
-                                                    <span style="width:14px;height:14px;background:@c;border-radius:50%;display:inline-block;border:1px solid #ccc;"></span>
+                                        @if (p.Pattern != null) {
+                                            <div class="d-flex align-items-center gap-2">
+                                                @if (!string.IsNullOrEmpty(p.Pattern.ImageUrl)) {
+                                                    <img src="@p.Pattern.ImageUrl" style="width:24px;height:24px;border-radius:4px;object-fit:cover;" />
                                                 }
-                                                <small class="text-muted">@v.Name</small>
-                                                <small class="text-muted">(@v.SKU)</small>
+                                                <small>@p.Pattern.Title</small>
                                             </div>
+                                        } else {
+                                            <small class="text-muted">None</small>
                                         }
                                     </td>
+                                    <td class="fw-bold">₹@p.Price</td>
+                                    <td><code class="text-dark">@p.Code</code></td>
                                     <td class="text-end">
                                         <button class="btn btn-link p-0 text-muted me-3" @onclick="() => EditProduct(p)">
                                             <i class="bi bi-pencil"></i>
@@ -338,23 +302,23 @@
 
 <style>
     .form-glass { background: #fdfdfd !important; border: 1px solid rgba(0,0,0,0.08) !important; border-radius: 12px !important; padding: 0.8rem !important; }
-    .form-glass-sm { background: #fdfdfd !important; border: 1px solid rgba(0,0,0,0.08) !important; border-radius: 10px !important; padding: 0.5rem 0.75rem !important; }
-    .form-glass:focus, .form-glass-sm:focus { border-color: var(--primary) !important; box-shadow: none !important; }
+    .form-glass:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 4px rgba(0,0,0,0.05) !important; }
     .product-img-mini { width: 50px; height: 50px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; overflow: hidden; color: #ddd; }
-    .bg-primary-soft { background: rgba(0,0,0,0.05); color: var(--primary); }
-    .bg-dark-soft { background: rgba(0,0,0,0.03); color: black; }
+    .bg-primary-soft { background: rgba(0,0,0,0.05); color: var(--primary); font-weight: 500; }
+    .bg-dark-soft { background: rgba(0,0,0,0.03); color: black; font-weight: 500; }
     .border-dashed { border: 2px dashed rgba(0,0,0,0.06); }
     .fw-700 { font-weight: 700; }
     .btn-close-swatch {
-        position: absolute; top: -6px; right: -6px;
-        width: 18px; height: 18px; border-radius: 50%;
-        background: #ef4444; color: white; border: none;
-        font-size: 12px; line-height: 1; cursor: pointer;
+        position: absolute; top: -8px; right: -8px;
+        width: 22px; height: 22px; border-radius: 50%;
+        background: #ef4444; color: white; border: 2px solid white;
+        font-size: 14px; line-height: 1; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        padding: 0;
+        padding: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .color-swatch-wrap, .variant-img-thumb { position: relative; }
-    .ql-container { font-size: 0.95rem !important; }
+    .ql-container { font-size: 1rem !important; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+    .ql-toolbar { border-top-left-radius: 12px; border-top-right-radius: 12px; border-color: rgba(0,0,0,0.08) !important; }
 </style>
 
 @code {
@@ -363,17 +327,12 @@
     private List<Brand>? brands;
     private List<Pattern>? patterns;
     private Product editingProduct = new();
-    private List<ProductVariant> draftVariants = new();
     
-    // Map from variant index -> list of Image Preview URLs or paths
-    private Dictionary<int, List<string>> draftImages = new();
-    
-    // Temp storage for files to be uploaded on save
-    private IBrowserFile? pendingMainImage;
-    private Dictionary<int, List<IBrowserFile>> pendingImages = new();
-    private Dictionary<int, IBrowserFile?> pendingModels = new();
+    // Gallery Preview URLs
+    private List<string> draftGalleryImages = new();
 
     private bool showForm = false;
+    private bool isSaving = false;
 
     protected override async Task OnInitializedAsync() => await LoadAll();
 
@@ -385,134 +344,120 @@
         patterns = await PatternService.GetAllPatternsAsync();
     }
 
-    private void StartAddProduct()
+    private async Task StartAddProduct()
     {
         editingProduct = new();
-        draftVariants = new();
-        draftImages = new();
-        pendingImages = new();
-        pendingModels = new();
-        pendingMainImage = null;
+        draftGalleryImages = new();
         showForm = true;
-    }
-
-    private void AddVariant()
-    {
-        draftVariants.Add(new ProductVariant { Name = "", Colors = "#000000" });
-        var idx = draftVariants.Count - 1;
-        draftImages[idx] = new List<string>();
-        pendingImages[idx] = new List<IBrowserFile>();
-        pendingModels[idx] = null;
-    }
-
-    private void RemoveVariant(int idx)
-    {
-        draftVariants.RemoveAt(idx);
-        // Rebuild dictionaries
-        var newImgDict = new Dictionary<int, List<string>>();
-        var newPendingImgDict = new Dictionary<int, List<IBrowserFile>>();
-        var newPendingModelDict = new Dictionary<int, IBrowserFile?>();
-
-        for (int i = 0; i < draftVariants.Count; i++)
-        {
-            int oldIdx = (i < idx) ? i : i + 1;
-            if (draftImages.TryGetValue(oldIdx, out var imgs)) newImgDict[i] = imgs;
-            if (pendingImages.TryGetValue(oldIdx, out var pImgs)) newPendingImgDict[i] = pImgs;
-            if (pendingModels.TryGetValue(oldIdx, out var pModel)) newPendingModelDict[i] = pModel;
-        }
-        draftImages = newImgDict;
-        pendingImages = newPendingImgDict;
-        pendingModels = newPendingModelDict;
+        await Task.Delay(200);
+        await JS.InvokeVoidAsync("initQuill", "quill-editor");
     }
 
     private List<string> GetColorList(string? colors) =>
         string.IsNullOrEmpty(colors) ? new() : colors.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
 
-    private void AddColor(ProductVariant v)
+    private void AddColor()
     {
-        var list = GetColorList(v.Colors);
+        var list = GetColorList(editingProduct.Colors);
         list.Add("#cccccc");
-        v.Colors = string.Join(",", list);
+        editingProduct.Colors = string.Join(",", list);
     }
 
-    private void UpdateColor(ProductVariant v, int idx, string? hex)
+    private void UpdateColor(int idx, string? hex)
     {
-        var list = GetColorList(v.Colors);
+        var list = GetColorList(editingProduct.Colors);
         if (idx < list.Count) list[idx] = hex ?? "#000000";
-        v.Colors = string.Join(",", list);
+        editingProduct.Colors = string.Join(",", list);
     }
 
-    private void RemoveColor(ProductVariant v, int idx)
+    private void RemoveColor(int idx)
     {
-        var list = GetColorList(v.Colors);
+        var list = GetColorList(editingProduct.Colors);
         if (idx < list.Count) list.RemoveAt(idx);
-        v.Colors = string.Join(",", list);
-    }
-
-    private List<string> GetImageList(ProductVariant v)
-    {
-        var idx = draftVariants.IndexOf(v);
-        return draftImages.TryGetValue(idx, out var imgs) ? imgs : new();
-    }
-
-    private void RemoveImage(ProductVariant v, int imgIdx)
-    {
-        var idx = draftVariants.IndexOf(v);
-        if (draftImages.TryGetValue(idx, out var imgs) && imgIdx < imgs.Count)
-        {
-            imgs.RemoveAt(imgIdx);
-        }
+        editingProduct.Colors = string.Join(",", list);
     }
 
     private async Task HandleMainImageSelect(InputFileChangeEventArgs e)
     {
-        pendingMainImage = e.File;
-        // Optional: show preview immediately
-        var format = "image/png";
-        var resizedImage = await e.File.RequestImageFileAsync(format, 100, 100);
-        var buffer = new byte[resizedImage.Size];
-        using var stream = resizedImage.OpenReadStream();
-        await stream.ReadAsync(buffer);
-        editingProduct.ImageUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-    }
+        try {
+            var file = e.File;
+            if (file == null) return;
 
-    private async Task HandleImageSelect(InputFileChangeEventArgs e, ProductVariant v)
-    {
-        var idx = draftVariants.IndexOf(v);
-        if (!draftImages.ContainsKey(idx)) draftImages[idx] = new();
-        if (!pendingImages.ContainsKey(idx)) pendingImages[idx] = new();
+            var fileName = $"{Guid.NewGuid()}_{file.Name}";
+            var path = Path.Combine(Env.WebRootPath, "uploads", "products", fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
-        foreach (var file in e.GetMultipleFiles())
-        {
-            pendingImages[idx].Add(file);
-            
-            var format = "image/png";
-            var resizedImage = await file.RequestImageFileAsync(format, 100, 100);
-            var buffer = new byte[resizedImage.Size];
-            using var stream = resizedImage.OpenReadStream();
-            await stream.ReadAsync(buffer);
-            var imageDataUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-            draftImages[idx].Add(imageDataUrl);
+            using var stream = file.OpenReadStream(maxAllowedSize: 20 * 1024 * 1024); // 20 MB max
+            using var fileStream = new FileStream(path, FileMode.Create);
+            await stream.CopyToAsync(fileStream);
+
+            editingProduct.ImageUrl = $"/uploads/products/{fileName}";
+        } catch (Exception ex) {
+            Console.WriteLine($"Main Image Error: {ex.Message}");
         }
     }
 
-    private void HandleModelSelect(InputFileChangeEventArgs e, ProductVariant v)
+    private async Task HandleAdditionalImagesSelect(InputFileChangeEventArgs e)
     {
-        var idx = draftVariants.IndexOf(v);
-        var file = e.File;
-        if (file != null)
+        try {
+            foreach (var file in e.GetMultipleFiles(maximumFileCount: 20))
+            {
+                var fileName = $"{Guid.NewGuid()}_{file.Name}";
+                var path = Path.Combine(Env.WebRootPath, "uploads", "products", fileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+                using var stream = file.OpenReadStream(maxAllowedSize: 20 * 1024 * 1024);
+                using var fileStream = new FileStream(path, FileMode.Create);
+                await stream.CopyToAsync(fileStream);
+
+                draftGalleryImages.Add($"/uploads/products/{fileName}");
+            }
+        } catch (Exception ex) {
+            Console.WriteLine($"Gallery Image Error: {ex.Message}");
+        }
+    }
+
+    private void RemoveGalleryImage(string url)
+    {
+        var idx = draftGalleryImages.IndexOf(url);
+        if (idx != -1)
         {
-            pendingModels[idx] = file;
-            v.ModelUrl = file.Name; // Temp display name for UI
+            draftGalleryImages.RemoveAt(idx);
+        }
+    }
+
+    private async Task HandleModelSelect(InputFileChangeEventArgs e)
+    {
+        try {
+            var file = e.File;
+            if (file != null)
+            {
+                var fileName = $"{Guid.NewGuid()}_{file.Name}";
+                var path = Path.Combine(Env.WebRootPath, "uploads", "models", fileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+                using var stream = file.OpenReadStream(maxAllowedSize: 250 * 1024 * 1024); // 250 MB max for 3D models
+                using var fileStream = new FileStream(path, FileMode.Create);
+                await stream.CopyToAsync(fileStream);
+
+                editingProduct.ModelUrl = $"/uploads/models/{fileName}";
+            }
+        } catch (Exception ex) {
+            Console.WriteLine($"Model Error: {ex.Message}");
         }
     }
 
     private string GetYoutubeEmbedUrl(string url)
     {
         try {
+            if (url.Contains("embed")) return url;
             var uri = new Uri(url);
             var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
             var vid = query["v"];
+            if (vid == null && url.Contains("youtu.be"))
+            {
+                vid = uri.AbsolutePath.TrimStart('/');
+            }
             return vid != null ? $"https://www.youtube.com/embed/{vid}" : url;
         } catch { return url; }
     }
@@ -521,129 +466,76 @@
     {
         if (string.IsNullOrWhiteSpace(editingProduct.Name) || editingProduct.CategoryId == 0) return;
 
-        try {
-            editingProduct.Description = await JS.InvokeAsync<string>("getQuillContent", "quill-editor");
-        } catch { }
+        isSaving = true;
+        StateHasChanged();
 
-        // 1. Process Main Image Upload
-        if (pendingMainImage != null)
+        try
         {
-            var fileName = $"{Guid.NewGuid()}_{pendingMainImage.Name}";
-            var path = Path.Combine(Env.WebRootPath, "uploads", "products", fileName);
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            using var stream = pendingMainImage.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-            using var fileStream = new FileStream(path, FileMode.Create);
-            await stream.CopyToAsync(fileStream);
-            editingProduct.ImageUrl = $"/uploads/products/{fileName}";
-        }
+            try {
+                editingProduct.Description = await JS.InvokeAsync<string>("getQuillContent", "quill-editor");
+            } catch { }
 
-        // 2. Process Variant File Uploads
-        for (int i = 0; i < draftVariants.Count; i++)
-        {
-            var v = draftVariants[i];
+            // Main Image and Model are already uploaded and paths set during selection
 
-            if (pendingModels.TryGetValue(i, out var modelFile) && modelFile != null)
+            // Save Product to DB first to get ID
+            using var context = await DbFactory.CreateDbContextAsync();
+            if (editingProduct.Id == 0)
             {
-                var fileName = $"{Guid.NewGuid()}_{modelFile.Name}";
-                var path = Path.Combine(Env.WebRootPath, "uploads", "models", fileName);
-                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-                using var stream = modelFile.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
-                using var fileStream = new FileStream(path, FileMode.Create);
-                await stream.CopyToAsync(fileStream);
-                v.ModelUrl = $"/uploads/models/{fileName}";
+                context.Products.Add(editingProduct);
             }
-
-            var finalUrls = new List<string>();
-            if (draftImages.TryGetValue(i, out var currentImgs))
+            else
             {
-                finalUrls.AddRange(currentImgs.Where(u => u.StartsWith("/uploads/")));
+                context.Products.Update(editingProduct);
+                // Clear existing images for simplicity in update
+                var oldImages = await context.ProductImages.Where(x => x.ProductId == editingProduct.Id).ToListAsync();
+                context.ProductImages.RemoveRange(oldImages);
             }
-
-            if (pendingImages.TryGetValue(i, out var newFiles))
-            {
-                foreach (var imgFile in newFiles)
-                {
-                    var fileName = $"{Guid.NewGuid()}_{imgFile.Name}";
-                    var path = Path.Combine(Env.WebRootPath, "uploads", "variants", fileName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-                    using var stream = imgFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-                    using var fileStream = new FileStream(path, FileMode.Create);
-                    await stream.CopyToAsync(fileStream);
-                    finalUrls.Add($"/uploads/variants/{fileName}");
-                }
-            }
-            draftImages[i] = finalUrls;
-        }
-
-        // 3. Save to DB
-        using var context = await DbFactory.CreateDbContextAsync();
-        if (editingProduct.Id == 0)
-        {
-            context.Products.Add(editingProduct);
-            await context.SaveChangesAsync();
-        }
-        else
-        {
-            context.Products.Update(editingProduct);
-            var oldVariants = await context.ProductVariants.Where(x => x.ProductId == editingProduct.Id).ToListAsync();
-            context.ProductVariants.RemoveRange(oldVariants);
-            await context.SaveChangesAsync();
-        }
-
-        for (int i = 0; i < draftVariants.Count; i++)
-        {
-            var v = draftVariants[i];
-            v.Id = 0; 
-            v.ProductId = editingProduct.Id;
-            context.ProductVariants.Add(v);
             await context.SaveChangesAsync();
 
-            if (draftImages.TryGetValue(i, out var imgs))
-            {
-                foreach (var imgUrl in imgs)
-                {
-                    context.VariantImages.Add(new VariantImage { VariantId = v.Id, ImageUrl = imgUrl });
-                }
-                await context.SaveChangesAsync();
-            }
-        }
+            // Process Gallery Images (already uploaded, just map to ProductImage)
+            var finalGalleryPaths = draftGalleryImages.Where(u => u.StartsWith("/uploads/")).ToList();
 
-        showForm = false;
-        await LoadAll();
+            foreach (var path in finalGalleryPaths)
+            {
+                context.ProductImages.Add(new ProductImage { ProductId = editingProduct.Id, ImageUrl = path });
+            }
+            await context.SaveChangesAsync();
+
+            showForm = false;
+            await LoadAll();
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
     private async Task EditProduct(Product p)
     {
         using var context = await DbFactory.CreateDbContextAsync();
         var full = await context.Products
-            .Include(x => x.Variants).ThenInclude(v => v.Images)
+            .Include(x => x.Images)
             .FirstOrDefaultAsync(x => x.Id == p.Id);
         if (full == null) return;
 
         editingProduct = new Product {
             Id = full.Id, Name = full.Name, Description = full.Description,
-            BasePrice = full.BasePrice, CategoryId = full.CategoryId,
-            BrandId = full.BrandId, ImageUrl = full.ImageUrl, CreatedAt = full.CreatedAt
+            Price = full.Price, CategoryId = full.CategoryId,
+            BrandId = full.BrandId, ImageUrl = full.ImageUrl, Code = full.Code,
+            PatternId = full.PatternId, Colors = full.Colors, YoutubeLink = full.YoutubeLink,
+            ModelUrl = full.ModelUrl, CreatedAt = full.CreatedAt
         };
 
-        draftVariants = full.Variants.Select(v => new ProductVariant {
-            Id = v.Id, ProductId = v.ProductId, Name = v.Name, SKU = v.SKU,
-            PriceAdjustment = v.PriceAdjustment, PatternId = v.PatternId,
-            Colors = v.Colors, YouTubeLink = v.YouTubeLink, ModelUrl = v.ModelUrl
-        }).ToList();
-
-        draftImages = new();
-        pendingImages = new();
-        pendingModels = new();
-        pendingMainImage = null;
-        for (int i = 0; i < full.Variants.Count; i++)
-        {
-            draftImages[i] = full.Variants[i].Images.Select(img => img.ImageUrl).ToList();
-            pendingImages[i] = new List<IBrowserFile>();
-            pendingModels[i] = null;
-        }
+        draftGalleryImages = full.Images.Select(img => img.ImageUrl).ToList();
 
         showForm = true;
+        
+        // Load description into Quill
+        await Task.Delay(200); // Wait for DOM
+        await JS.InvokeVoidAsync("initQuill", "quill-editor");
+        try {
+            await JS.InvokeVoidAsync("setQuillContent", "quill-editor", editingProduct.Description ?? "");
+        } catch { }
     }
 
     private async Task DeleteProduct(int id)
@@ -652,8 +544,12 @@
         await LoadAll();
     }
 
-    private void CancelEdit()
+    private async Task CancelEdit()
     {
-        showForm = false;
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to leave? Unsaved changes will be lost.");
+        if (confirm)
+        {
+            showForm = false;
+        }
     }
 }

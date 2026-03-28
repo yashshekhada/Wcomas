@@ -1,5 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
+@using Wcomas.Services
+@inject UserSessionInfo SessionInfo
+@inject IHttpContextAccessor Accessor
+<!DOCTYPE html><html lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -12,14 +14,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <Import Map />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <ImportMap />
     <HeadOutlet />
 </head>
 
 <body>
-    <Routes />
+    <Routes @rendermode="InteractiveServer" />
     <script src="_framework/blazor.web.js"></script>
-    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="@Assets["app.js"]"></script>
     <script>
         const handleScroll = () => {
             const reveals = document.querySelectorAll('.reveal');
@@ -33,9 +39,25 @@
             });
         };
         window.addEventListener('scroll', handleScroll);
-        // Trigger once on load
-        setTimeout(handleScroll, 100);
+        
+        // Trigger continuously to support Blazor dynamic DOM injections
+        setInterval(handleScroll, 200);
+        
+        // Also fire immediately on load
+        handleScroll();
     </script>
 </body>
+
+@code {
+    protected override void OnInitialized()
+    {
+        var context = Accessor.HttpContext;
+        if (context != null)
+        {
+            SessionInfo.IpAddress = context.Connection.RemoteIpAddress?.ToString();
+            SessionInfo.UserAgent = context.Request.Headers["User-Agent"].ToString();
+        }
+    }
+}
 
 </html>

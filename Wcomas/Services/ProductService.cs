@@ -19,7 +19,8 @@ namespace Wcomas.Services
             return await context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
-                .Include(p => p.Variants)
+                .Include(p => p.Pattern)
+                .Include(p => p.Images)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
         }
@@ -30,7 +31,8 @@ namespace Wcomas.Services
             return await context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
-                .Include(p => p.Variants)
+                .Include(p => p.Pattern)
+                .Include(p => p.Images)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 

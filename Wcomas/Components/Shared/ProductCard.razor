@@ -1,0 +1,199 @@
+@using Wcomas.Models
+
+<div class="product-listing-card reveal active">
+    <a href="/product/@Product.Id" class="text-decoration-none">
+        <div class="product-img-wrapper">
+            <img src="@(string.IsNullOrEmpty(Product.ImageUrl) ? "images/hero.png" : Product.ImageUrl)" alt="@Product.Name" loading="lazy" onload="this.style.opacity='1'" />
+            
+            @if (Product.Price > 0)
+            {
+                <div class="product-price-tag">₹@Product.Price.ToString("N0")</div>
+            }
+            <div class="product-overlay">
+                <span class="btn-view-details">VIEW DETAILS</span>
+            </div>
+        </div>
+        <div class="product-listing-info">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="product-code">@(string.IsNullOrEmpty(Product.Code) ? "WCO-00" + Product.Id : Product.Code)</span>
+                @if (Product.Category != null)
+                {
+                    <span class="category-badge">@Product.Category.Name</span>
+                }
+            </div>
+            <h4 class="product-name">@Product.Name</h4>
+            <div class="product-actions mt-auto pt-3">
+                <span class="text-link">LEARN MORE <i class="bi bi-arrow-right ms-2 transition-icon"></i></span>
+            </div>
+        </div>
+    </a>
+</div>
+
+<style>
+    .product-listing-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(0,0,0,0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    }
+
+    .product-listing-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+        border-color: var(--accent-light, #d4b884);
+    }
+
+    .product-img-wrapper {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        background: #f6f6f6;
+    }
+
+    .product-img-wrapper::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, #f6f6f6 0%, #ffffff 50%, #f6f6f6 100%);
+        background-size: 200% 100%;
+        animation: shimmer-load 2s infinite linear;
+        z-index: 1;
+    }
+
+    .product-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1.2s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.6s ease;
+        position: relative;
+        z-index: 2;
+        /* Image fade-in to hide partial loading */
+        opacity: 0;
+    }
+
+    @@keyframes shimmer-load {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .product-listing-card:hover .product-img-wrapper img {
+        transform: scale(1.1);
+    }
+
+    .product-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(29, 29, 31, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.4s ease;
+        backdrop-filter: blur(4px);
+    }
+
+    .product-listing-card:hover .product-overlay {
+        opacity: 1;
+    }
+
+    .btn-view-details {
+        background: white;
+        color: var(--primary);
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        font-size: 0.7rem;
+        transform: translateY(20px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .product-listing-card:hover .btn-view-details {
+        transform: translateY(0);
+    }
+
+    .product-price-tag {
+        position: absolute;
+        top: 1.25rem;
+        right: 1.25rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        font-weight: 800;
+        color: var(--primary);
+        font-size: 0.85rem;
+        z-index: 5;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .product-listing-info {
+        padding: 1.75rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-code {
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 0.65rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .category-badge {
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        background: rgba(184, 144, 80, 0.1);
+        color: var(--accent);
+        text-transform: uppercase;
+    }
+
+    .product-name {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        line-height: 1.2;
+    }
+
+    .text-link {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 0.75rem;
+        letter-spacing: 1.5px;
+        display: inline-flex;
+        align-items: center;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+    }
+
+    .product-listing-card:hover .text-link {
+        opacity: 1;
+        color: var(--accent);
+    }
+
+    .transition-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .product-listing-card:hover .transition-icon {
+        transform: translateX(8px);
+    }
+</style>
+
+@code {
+    [Parameter] public Product Product { get; set; } = default!;
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Viewer</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #fdfcf9; font-family: 'Inter', sans-serif; }
+        model-viewer { width: 100vw; height: 100vh; background-color: #fdfcf9; }
+        
+        #progress-container {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 250px;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-text {
+            color: #b89050;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .progress-bar { 
+            width: 100%; 
+            height: 4px; 
+            background: rgba(184, 144, 80, 0.1); 
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .update-bar { 
+            background: linear-gradient(90deg, #b89050, #d4b884); 
+            width: 0%; 
+            height: 100%; 
+            border-radius: 10px; 
+            transition: width 0.3s ease-out;
+            box-shadow: 0 0 15px rgba(184, 144, 80, 0.4);
+        }
+
+        #progress-container.hide { opacity: 0; pointer-events: none; }
+    </style>
+    <!-- Import the component -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800&display=swap" rel="stylesheet">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+</head>
+<body>
+    <model-viewer id="viewer"
+                  camera-controls 
+                  touch-action="pan-y" 
+                  autoplay 
+                  shadow-intensity="1.5" 
+                  shadow-softness="1"
+                  environment-image="neutral"
+                  exposure="0.8">
+        <div id="progress-container" slot="progress-bar">
+            <span class="loading-text">Building Experience...</span>
+            <div class="progress-bar">
+                <div class="update-bar" id="update-bar"></div>
+            </div>
+        </div>
+    </model-viewer>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const modelUrl = urlParams.get('model');
+        const viewer = document.getElementById('viewer');
+        const progressContainer = document.getElementById('progress-container');
+        const updateBar = document.getElementById('update-bar');
+
+        if (modelUrl) {
+            viewer.src = modelUrl;
+        }
+
+        viewer.addEventListener('progress', (event) => {
+            const progress = event.detail.totalProgress;
+            updateBar.style.width = `${progress * 100}%`;
+            
+            if (progress === 1) {
+                progressContainer.classList.add('hide');
+            }
+        });
+    </script>
+</body>
+</html>
+
